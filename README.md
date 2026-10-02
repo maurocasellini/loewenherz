@@ -5,7 +5,7 @@ Läuft komplett offline (Flugmodus), speichert nur auf dem Gerät und braucht ke
 
 ## Was drin ist
 
-- **Dschungel-Expedition:** 6 Level im Mario-Stil mit Matteo oder Elara im Entdecker-Outfit. Laufen, springen, ?-Blöcke, Gegner plattspringen, wackelige Brücke, dunkle Höhle, Schlangen-Tempel, rollende Steinkugel, goldener Löwe. An den **Mut-Toren** muss das Kind etwas laut sagen (übt K, T, S, SCH) oder den Mut-Knopf halten.
+- **Expedition (Jump'n'Run):** 4 Welten mit 12 Leveln (Dschungel, Eiswelt, Vulkaninsel, Wolkenland) mit Matteo oder Elara im Entdecker-Outfit. Steuerung im Gameboy-Stil: Steuerkreuz, **A = springen**, **B = Peitsche**. Die Peitsche betäubt Gegner, zerschlägt Kisten und schwingt einen an goldenen Ringen über Abgründe. Dazu ?-Blöcke, Eis, Lava mit Feuerspringern, Wolken, Pilz-Trampoline, eine rollende Steinkugel und Mut-Tore, an denen das Kind etwas laut sagen muss (übt K, T, S, SCH) oder den Mut-Knopf hält.
 - **Mut-Welt:** Mut-Missionen, Löwen-Brüller, Gefühle-Wetter, Erzähl-Würfel, Kraft tanken, Stolz-Glas
 - **Sprech-Dschungel:** Laut-Training K/T/S/SCH in 6 Stufen, Ohren-Detektiv (Tasse/Tasche), Zungen-Turnen mit animiertem Löwen
 - **Eltern-Ecke** (mit Rechenaufgabe gesperrt): Name, Fortschritt, Tipps

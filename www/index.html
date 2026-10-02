@@ -303,6 +303,8 @@ mark { background: none; color: var(--berry); }
 .stop .st { font-size: 26px; }
 .stop:disabled { opacity: .5; cursor: default; }
 .stop:not(:disabled):active { transform: translateY(3px); }
+.worldhead { font-family: var(--f-display); font-weight: 900; font-size: 20px; padding: 14px 6px 6px; color: var(--mane); }
+.worldhead:first-child { padding-top: 0; }
 .path { height: 16px; margin-left: 40px; border-left: 4px dotted color-mix(in srgb, var(--mane) 55%, transparent); }
 .heropick { display: flex; gap: 14px; justify-content: center; }
 .hero { display: grid; justify-items: center; gap: 2px; padding: 10px 16px 12px; border-radius: 22px; background: var(--card); box-shadow: var(--shadow); border: 4px solid transparent; }
@@ -331,7 +333,7 @@ mark { background: none; color: var(--berry); }
 .ab { display: flex; gap: 18px; transform: rotate(-22deg); margin-right: 4px; }
 .abk { display: grid; justify-items: center; gap: 6px; }
 .abk.a { margin-top: -34px; }
-.abk small { font-family: var(--f-display); font-weight: 900; font-size: 18px; color: #2E2F7A; transform: rotate(22deg); }
+.abk small { font-family: var(--f-display); font-weight: 900; font-size: 13px; letter-spacing: .04em; color: #2E2F7A; white-space: nowrap; }
 .pbtn.gbb { width: 82px; height: 82px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #C2416E, #8E2147); box-shadow: 0 6px 0 #5E1430, inset 0 2px 0 rgba(255,255,255,.25); font-size: 0; }
 .pbtn.gbb.on { transform: translateY(4px); box-shadow: 0 2px 0 #5E1430; }
 @media (max-width: 370px) { .dpad { transform: scale(.85); margin-left: -10px; } .pbtn.gbb { width: 70px; height: 70px; } }
@@ -502,8 +504,8 @@ mark { background: none; color: var(--berry); }
         <i class="ar u"></i><i class="ar d"></i><i class="ar l"></i><i class="ar r"></i>
       </div>
       <div class="ab">
-        <div class="abk b"><button class="pbtn gbb" id="gB" aria-label="Springen (B)"></button><small>B</small></div>
-        <div class="abk a"><button class="pbtn gbb" id="gJ" aria-label="Springen (A)"></button><small>A</small></div>
+        <div class="abk b"><button class="pbtn gbb" id="gB" aria-label="Peitsche (B)"></button><small>B · Peitsche</small></div>
+        <div class="abk a"><button class="pbtn gbb" id="gJ" aria-label="Springen (A)"></button><small>A · Sprung</small></div>
       </div>
     </div>
   </section>
@@ -1400,7 +1402,8 @@ mark { background: none; color: var(--berry); }
       ground(a, b, top = 8) { for (let x = a; x < b; x++) for (let y = top; y < ROWS; y++) g[y][x] = "#"; return o; },
       row(x, y, n, ch) { for (let i = 0; i < n; i++) g[y][x + i] = ch; return o; },
       put(x, y, ch) { g[y][x] = ch; return o; },
-      gems(y, ...xs) { xs.forEach((x) => (g[y][x] = "*")); return o; }
+      gems(y, ...xs) { xs.forEach((x) => (g[y][x] = "*")); return o; },
+      ice(a, b, top = 8) { o.ground(a, b, top); for (let x = a; x < b; x++) g[top][x] = "I"; return o; }
     };
     return o;
   }
@@ -1408,8 +1411,15 @@ mark { background: none; color: var(--berry); }
     jungle: { sky: ["#8FD3F4", "#DDF6CC"], far: "#8CCB97", near: "#3E9A5C", dirt: "#9A6337", dirt2: "#7E4E2A", top: "#4CB860", water: "#3A8FD8", deco: "tree", pit: "~", enemy: "🦔" },
     cave: { sky: ["#141828", "#262038"], far: "#232842", near: "#30344F", dirt: "#5B5470", dirt2: "#463F5A", top: "#7A7196", water: "#1F4E7A", deco: "rock", pit: "~", enemy: "🕷️", dark: true },
     temple: { sky: ["#F7C98B", "#FCEBC9"], far: "#E9B57A", near: "#C98A4B", dirt: "#C9A26B", dirt2: "#A88350", top: "#E8CF9A", water: "#3A8FD8", deco: "pillar", pit: "^", enemy: "🦂" },
-    gold: { sky: ["#FFB86B", "#FFE9AE"], far: "#EFA866", near: "#B8743E", dirt: "#B38A55", dirt2: "#946E3E", top: "#8FCB5F", water: "#3A8FD8", deco: "tree", pit: "~", enemy: "🦂" }
+    gold: { sky: ["#FFB86B", "#FFE9AE"], far: "#EFA866", near: "#B8743E", dirt: "#B38A55", dirt2: "#946E3E", top: "#8FCB5F", water: "#3A8FD8", deco: "tree", pit: "~", enemy: "🦂" },
+    ice: { sky: ["#BFE3FF", "#F1FAFF"], far: "#D6E9F7", near: "#A9C9E3", dirt: "#8FB5D6", dirt2: "#7AA0C2", top: "#FFFFFF", water: "#5AA9E6", deco: "pine", pit: "~", enemy: "🐧", flyer: "🦉" },
+    lava: { sky: ["#3B1C2E", "#9A4630"], far: "#5A2A2A", near: "#3A1B1F", dirt: "#4A3A3F", dirt2: "#382B30", top: "#6E5A5F", water: "#FF5A1F", deco: "rock", pit: "~", enemy: "🦎", flyer: "🦇", lava: true },
+    lavaDark: { sky: ["#1E0F18", "#3A1A1A"], far: "#2A1418", near: "#24121A", dirt: "#4A3A3F", dirt2: "#382B30", top: "#6E5A5F", water: "#FF5A1F", deco: "rock", pit: "~", enemy: "🦎", flyer: "🦇", lava: true, dark: true },
+    sky: { sky: ["#9FD8FF", "#FFF1F8"], far: "#FFFFFF", near: "#EAF5FF", dirt: "#F4F7FF", dirt2: "#DCE6F6", top: "#FFFFFF", water: "#3A8FD8", deco: "cloud", pit: ".", enemy: "🐞", flyer: "🐝", cloud: true }
   };
+  const WORLDS = [
+    { name: "Dschungel", ico: "🌴" }, { name: "Eiswelt", ico: "❄️" }, { name: "Vulkaninsel", ico: "🌋" }, { name: "Wolkenland", ico: "☁️" }
+  ];
   const LEVELS = [
     { name: "Der Dschungelpfad", sub: "Lauf, spring und sammle Edelsteine", ico: "🌴", goal: "🗺️", theme: "jungle",
       intro: "Lauf mit den Pfeilen und spring mit dem grünen Knopf. Spring auf die Igel, dann werden sie schwindelig!",
@@ -1474,19 +1484,93 @@ mark { background: none; color: var(--berry); }
         .ground(34, 50).put(38, 7, "J").row(40, 2, 4, "=").gems(1, 40, 41, 42, 43).put(45, 7, "K").put(48, 7, "E")
         .ground(53, 70).put(58, 7, "^").put(59, 7, "^").gems(4, 58, 59).ground(64, 66, 6).put(68, 7, "E")
         .row(70, 8, 12, "C").gems(6, 73, 77, 80)
-        .ground(82, 110).put(84, 7, "K").put(92, 7, "G").put(97, 7, "J").ground(100, 104, 3).put(102, 2, "X") }
+        .ground(82, 110).put(84, 7, "K").put(92, 7, "G").put(99, 7, "J").ground(100, 104, 3).put(102, 2, "X") },
+
+    /* ❄️ Eiswelt */
+    { world: 1, name: "Der rutschige Gletscher", sub: "Eis, Pinguine und die Peitsche", ico: "🧊", goal: "🧭", theme: "ice",
+      intro: "Neu: Mit B knallst du die Peitsche! Pinguine werden schwindelig, Kisten gehen kaputt, und an goldenen Ringen kannst du dich über Abgründe schwingen. Vorsicht, das Eis ist rutschig!",
+      gates: [{ t: "say", ico: "🐻‍❄️", text: "Ein Eisbär! Er lässt dich vorbei, wenn du sagst: SCHNEE, SCHAL, SCHLITTEN!", speak: "Schnee, Schal, Schlitten!" }],
+      build: () => mk(100).ground(0, 14).put(1, 7, "P").gems(6, 4, 6, 8).row(10, 5, 2, "Q")
+        .ice(14, 30).put(22, 7, "E").gems(5, 18, 26)
+        .ice(33, 50).put(40, 7, "W").put(40, 6, "W").put(40, 5, "W").put(45, 7, "G").put(47, 7, "K").gems(6, 36)
+        .ground(50, 64).put(56, 7, "E").row(58, 5, 2, "Q").put(67, 3, "H").gems(4, 65, 69)
+        .ground(71, 100).put(80, 7, "E").put(84, 7, "W").row(86, 5, 2, "Q").put(95, 7, "X") },
+    { world: 1, name: "Die Schneeberge", sub: "Schwing dich über die Gletscherspalten", ico: "🏔️", goal: "💎", theme: "ice",
+      intro: "In den Schneebergen gibt es tiefe Gletscherspalten. Knall die Peitsche an den goldenen Ring und schwing dich rüber!",
+      gates: [
+        { t: "say", ico: "⛄", text: "Ein Schneemann! Sag mit K: KALTE KEKSE KNACKEN!", speak: "Kalte Kekse knacken!" },
+        { t: "hold", ico: "🐻‍❄️", text: "Der grosse Eisbär brüllt! Halte den Mut-Knopf und brüll zurück: ICH HAB KEINE ANGST!" }],
+      build: () => mk(110).ground(0, 12).put(1, 7, "P").gems(6, 4, 6).put(15, 3, "H").gems(4, 14, 16)
+        .ice(19, 35).put(27, 7, "E").row(24, 5, 2, "Q").put(33, 7, "W").put(33, 6, "W").put(33, 5, "W")
+        .ground(35, 40, 6).ice(40, 55, 6).put(50, 5, "G").put(52, 5, "K").put(45, 5, "E").gems(3, 43, 47)
+        .put(58, 2, "H").ground(62, 80).put(68, 7, "E").put(71, 7, "W").put(75, 7, "E").row(65, 5, 2, "Q")
+        .put(83, 3, "H").gems(4, 82, 84)
+        .ground(87, 110).put(92, 7, "G").put(94, 7, "K").put(98, 5, "Y").put(104, 7, "X") },
+
+    /* 🌋 Vulkaninsel */
+    { world: 2, name: "Die heisse Insel", sub: "Lava und Feuerspringer", ico: "🔥", goal: "🔑", theme: "lava",
+      intro: "Auf der Vulkaninsel blubbert heisse Lava. Pass auf die Feuerspringer auf: Warte, bis sie wieder untertauchen, dann spring!",
+      gates: [{ t: "say", ico: "🐉", text: "Ein kleiner Feuerdrache! Sag mit T: TOMATE, TIGER, TUNNEL!", speak: "Tomate, Tiger, Tunnel!" }],
+      build: () => mk(110).ground(0, 15).put(1, 7, "P").gems(6, 4, 6, 8).put(9, 5, "Q").put(16, 8, "F")
+        .ground(18, 32).put(24, 7, "E").put(29, 7, "W").put(29, 6, "W").gems(5, 22, 26).put(33, 8, "F")
+        .ground(35, 50).put(37, 7, "K").put(44, 7, "G").row(40, 5, 2, "Q")
+        .put(53, 3, "H").gems(4, 52, 54)
+        .ground(57, 72).row(60, 5, 3, "Q").put(66, 7, "E")
+        .put(72, 7, "M")
+        .ground(82, 110).put(84, 7, "K").put(90, 5, "Y").put(96, 7, "W").gems(6, 88, 100).put(104, 7, "X") },
+    { world: 2, name: "Im Vulkan", sub: "Dunkel, heiss und ganz schön mutig", ico: "🌋", goal: "🏺", theme: "lavaDark",
+      intro: "Im Vulkan ist es dunkel. Zünde die Fackeln an, knall die Peitsche und schwing dich über die Lava!",
+      gates: [
+        { t: "hold", ico: "🌋", text: "Im Vulkan ist es heiss und dunkel. Halte den Mut-Knopf und ruf: ICH BIN STARK!" },
+        { t: "say", ico: "🐍", text: "Eine Feuerschlange! Zisch wie sie: SSSSSS! Zähne zusammen und lächeln!", speak: "Ssssssss." }],
+      build: () => {
+        const m = mk(100).row(0, 0, 100, "#").ground(0, 14).put(1, 7, "P").put(4, 7, "G").put(7, 7, "T").gems(6, 10, 12).put(15, 8, "F")
+          .ground(17, 30).put(18, 7, "K").put(20, 7, "T").put(25, 7, "E").put(28, 7, "W").put(28, 6, "W").put(28, 5, "W")
+          .put(33, 3, "H").gems(4, 32, 34)
+          .ground(37, 52).put(39, 7, "K").put(40, 7, "T").put(43, 5, "Q").put(46, 7, "G").put(54, 8, "F")
+          .ground(55, 70).put(58, 7, "K").put(60, 7, "T").put(64, 7, "E").gems(5, 62, 66)
+          .put(73, 3, "H")
+          .ground(77, 100).put(80, 7, "T").put(86, 7, "W").put(94, 7, "X");
+        [6, 19, 41, 58, 82, 91].forEach((x) => m.put(x, 1, "#"));
+        return m;
+      } },
+
+    /* ☁️ Wolkenland */
+    { world: 3, name: "Auf den Wolken", sub: "Hüpf von Wolke zu Wolke", ico: "☁️", goal: "🌈", theme: "sky",
+      intro: "Hoch über allen Bergen: das Wolkenland! Hüpf von Wolke zu Wolke. Die Bienen werden mit der Peitsche schwindelig.",
+      gates: [{ t: "say", ico: "☀️", text: "Die Sonne will mitspielen! Sag: SIEBEN SONNEN SCHEINEN!", speak: "Sieben Sonnen scheinen!" }],
+      build: () => mk(110).ground(0, 12).put(1, 7, "P").gems(6, 4, 6).row(8, 5, 2, "Q")
+        .row(13, 7, 4, "=").gems(5, 14, 15)
+        .ground(19, 30).put(21, 7, "K").put(24, 7, "E").put(28, 7, "J").row(29, 3, 6, "=").gems(2, 30, 31, 32, 33)
+        .ground(37, 50).put(43, 5, "Y").put(47, 7, "G").put(49, 7, "K")
+        .row(50, 8, 10, "C").gems(6, 53, 57)
+        .ground(60, 75).put(62, 7, "K").put(64, 7, "W").put(68, 7, "E").put(78, 3, "H").gems(4, 77, 79)
+        .ground(82, 110).put(96, 7, "E").put(100, 5, "Y").row(91, 5, 2, "Q").put(104, 7, "X") },
+    { world: 3, name: "Das Himmelsschloss", sub: "Die letzte grosse Expedition", ico: "🏰", goal: "👑", theme: "sky",
+      intro: "Das Himmelsschloss! Ganz oben liegt die goldene Krone. Nutze alles, was du gelernt hast: springen, Peitsche und schwingen!",
+      gates: [
+        { t: "say", ico: "🐑", text: "Ein Wolkenschaf! Sag: SCHÖNE SCHÄFCHENWOLKEN!", speak: "Schöne Schäfchenwolken!" },
+        { t: "hold", ico: "🏰", text: "Das Schlosstor ist riesig. Halte den Mut-Knopf und ruf ganz laut: ICH SCHAFFE ALLES!" }],
+      build: () => mk(110).ground(0, 12).put(1, 7, "P").gems(6, 4, 6).put(8, 7, "G").put(15, 3, "H").gems(4, 14, 16)
+        .ground(19, 32).put(24, 5, "Y").put(30, 7, "W").put(30, 6, "W").put(30, 5, "W").row(21, 5, 2, "Q")
+        .put(32, 7, "M")
+        .ground(40, 55).put(42, 7, "K").put(47, 7, "J").row(48, 3, 5, "=").gems(2, 48, 49, 50, 51, 52).put(53, 7, "E")
+        .put(58, 3, "H").gems(4, 57, 59)
+        .ground(62, 80).put(66, 7, "E").put(72, 5, "Y").put(76, 7, "W")
+        .row(82, 7, 2, "=")
+        .ground(86, 110).put(88, 7, "K").put(94, 7, "G").put(100, 7, "J").ground(101, 105, 3).put(103, 2, "X") }
   ];
 
   function loadLevel(i) {
     const def = LEVELS[i], m = def.build(), th = THEMES[def.theme], g = m.g, W = m.W;
     for (let x = 0; x < W; x++) if (g[9][x] === ".") for (let y = 8; y < ROWS; y++) if (g[y][x] === ".") g[y][x] = th.pit;
-    let qs = 0; g.forEach((r) => r.forEach((ch) => { if (ch === "Q") qs++; }));
-    const L = { qs, i, def, th, W, g, gems: [], enemies: [], cps: [], gates: [], torches: [], movers: [], crumble: {}, goal: null, trig: null, stop: null, t: 0, got: 0, parts: [], shake: 0, cam: 0, jumpT: -9 };
+    let qs = 0; g.forEach((r) => r.forEach((ch) => { if (ch === "Q" || ch === "W") qs++; }));
+    const L = { qs, i, def, th, W, g, gems: [], enemies: [], cps: [], gates: [], torches: [], movers: [], hooks: [], jumpers: [], crumble: {}, goal: null, trig: null, stop: null, t: 0, got: 0, parts: [], shake: 0, cam: 0, jumpT: -9 };
     const gatePos = [];
     let start = { x: 6, y: 200 };
     for (let y = 0; y < ROWS; y++) for (let x = 0; x < W; x++) {
       const ch = g[y][x], px = x * TS, py = y * TS;
-      if (!"P*EKGTXMRZ".includes(ch)) continue;
+      if (!"P*EKGTXMRZHFY".includes(ch)) continue;
       g[y][x] = ".";
       if (ch === "P") start = { x: px + 6, y: py + TS - 28 };
       else if (ch === "*") L.gems.push({ x: px + 15, y: py + 15, got: false });
@@ -1496,6 +1580,9 @@ mark { background: none; color: var(--berry); }
       else if (ch === "T") L.torches.push({ x: px + 15, y: py + TS, lit: false });
       else if (ch === "X") L.goal = { x: px, y: py };
       else if (ch === "R") L.trig = px;
+      else if (ch === "H") L.hooks.push({ x: px + 15, y: py + 10 });
+      else if (ch === "F") { g[y][x] = th.pit; L.jumpers.push({ x: px + 15, base: py + TS, t: Math.random() * 2.6 }); }
+      else if (ch === "Y") L.enemies.push({ x: px + 3, x0: px + 3, y: py + 5, y0: py + 5, w: 24, h: 20, vx: 45, stun: 0, fly: true });
       else if (ch === "Z") L.stop = px;
       else if (ch === "M") {
         let c = x + 1; while (c < W && g[8][c] !== "#") c++;
@@ -1503,14 +1590,14 @@ mark { background: none; color: var(--berry); }
       }
     }
     gatePos.sort((a, b) => a.x - b.x).forEach((p, k) => L.gates.push({ x: p.x, y: p.y - 2 * TS, w: TS, h: 3 * TS, open: false, op: 0, asked: false, pr: def.gates[k] || def.gates[0] }));
-    L.p = { x: start.x, y: start.y, w: 18, h: 28, vx: 0, vy: 0, kx: 0, onGround: false, coyote: 0, face: 1, walk: 0, inv: 0, squash: 0, bub: { txt: `Los geht's, ${heroOf().name}!`, t: 2.2 }, carry: null };
+    L.p = { x: start.x, y: start.y, w: 18, h: 28, vx: 0, vy: 0, kx: 0, whipT: 0, whipCd: 0, swing: null, flyT: 0, onIce: false, onGround: false, coyote: 0, face: 1, walk: 0, inv: 0, squash: 0, bub: { txt: `Los geht's, ${heroOf().name}!`, t: 2.2 }, carry: null };
     L.cp = { x: start.x, y: start.y };
     L.boulder = { on: false, done: false, x: 0, rot: 0, fall: 0, vy: 0 };
     return L;
   }
 
   const tAt = (L, tx, ty) => (tx < 0 || tx >= L.W ? "#" : ty < 0 || ty >= ROWS ? "." : L.g[ty][tx]);
-  const isFull = (ch) => ch === "#" || ch === "J" || ch === "Q" || ch === "U";
+  const isFull = (ch) => ch === "#" || ch === "J" || ch === "Q" || ch === "U" || ch === "W" || ch === "I";
   const cDown = (L, tx, ty) => { const c = L.crumble[tx + "," + ty]; return !!(c && c.down > 0); };
   const isTop = (L, ch, tx, ty) => ch === "=" || ch === "B" || (ch === "C" && !cDown(L, tx, ty));
   const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -1532,7 +1619,7 @@ mark { background: none; color: var(--berry); }
         if (isFull(ch) || (isTop(L, ch, tx, ty) && prevB <= ty * TS + 0.5)) {
           p.y = ty * TS - p.h;
           if (ch === "J") { p.vy = -860; L.jumpT = L.t; tone(300, 0, .1, "sine", .15); tone(640, .07, .18, "sine", .15); return; }
-          p.vy = 0; p.onGround = true;
+          p.vy = 0; p.onGround = true; p.onIce = ch === "I";
           if (ch === "C") { const k = tx + "," + ty, c = L.crumble[k] || (L.crumble[k] = { t: 0, down: 0, fallY: 0 }); if (!c.t && !c.down) c.t = 0.001; }
           return;
         }
@@ -1549,7 +1636,50 @@ mark { background: none; color: var(--berry); }
       }
     }
   }
+  function hurt(L, p, fromX) { p.inv = 1.2; p.kx = (p.x + p.w / 2 < fromX ? -1 : 1) * 260; p.vy = -260; p.swing = null; bubble(L, "Autsch!"); tone(180, 0, .2, "sawtooth", .07); }
+  // Peitsche: betäubt Gegner, zerschlägt Kisten, greift goldene Ringe.
+  function whipNow(L, p) {
+    p.whipT = 0.28; p.whipCd = 0.35;
+    tone(2400, 0, .04, "sawtooth", .07); tone(1200, .03, .05, "square", .05);
+    const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
+    if (!p.swing) {
+      const tx = Math.floor(cx / TS) + p.face, ty = Math.floor((p.y + p.h + 2) / TS);
+      const edge = !p.onGround || (!isFull(tAt(L, tx, ty)) && !isTop(L, tAt(L, tx, ty), tx, ty)) || (!isFull(tAt(L, tx + p.face, ty)) && !isTop(L, tAt(L, tx + p.face, ty), tx + p.face, ty));
+      let best = null, bd = 205;
+      L.hooks.forEach((h) => { const d = Math.hypot(h.x - cx, h.y - cy); if (h.y < cy - 20 && d < bd && (h.x - cx) * p.face > -40) { best = h; bd = d; } });
+      if (best && edge) {
+        const r = Math.min(150, Math.max(70, bd)), a0 = Math.atan2(cx - best.x, cy - best.y);
+        const w0 = p.face * Math.sqrt(2 * (1500 / r) * Math.max(0.15, Math.cos(a0) - Math.cos(1.05)));
+        p.swing = { hx: best.x, hy: best.y, r, a: a0, w: w0, dirSign: p.face, t: 0 };
+        p.vx = p.vy = p.kx = 0; bubble(L, "Juhuuu!"); return;
+      }
+    }
+    const zone = { x: p.face > 0 ? cx : cx - 86, y: p.y - 8, w: 86, h: p.h + 14 };
+    L.enemies.forEach((e) => { if (hit(zone, e)) { if (e.stun <= 0) burst(L, e.x + 12, e.y, "#FFC233", 6, "★"); e.stun = 3.5; tone(900, .02, .08, "sine", .12); } });
+    for (let ty = Math.floor(zone.y / TS); ty <= Math.floor((zone.y + zone.h) / TS); ty++)
+      for (let tx = Math.floor(zone.x / TS); tx <= Math.floor((zone.x + zone.w) / TS); tx++)
+        if (tAt(L, tx, ty) === "W") { L.g[ty][tx] = "."; L.got++; burst(L, tx * TS + 15, ty * TS + 15, "#B07A45", 8); burst(L, tx * TS + 15, ty * TS + 10, "#3FD0E8", 3, "💎"); tone(1320, .04, .08, "triangle", .12); }
+  }
+  // Schwingen am Ring: Pendel. Loslassen mit A oder automatisch im höchsten Punkt nach vorne.
+  function swingStep(L, p, dir, dt) {
+    const s = p.swing; s.t += dt;
+    s.w += (-(1500 / s.r) * Math.sin(s.a) + dir * 2.5) * dt;
+    s.a += s.w * dt;
+    p.face = s.w >= 0 ? 1 : -1;
+    p.x = s.hx + s.r * Math.sin(s.a) - p.w / 2; p.y = s.hy + s.r * Math.cos(s.a) - p.h / 2;
+    const fwd = s.a * s.dirSign > 0.85 && s.w * s.dirSign > 0;
+    if (gIn.buf > 0 || fwd || s.t > 8) {
+      p.vx = s.r * Math.cos(s.a) * s.w + p.face * 70; p.vy = -s.r * Math.sin(s.a) * s.w - 280;
+      if (p.vy > -200) p.vy = -200;
+      p.swing = null; gIn.buf = 0; p.flyT = 0.7; p.coyote = 0; tone(660, 0, .1, "triangle", .1);
+    }
+    L.parts.forEach((q) => { q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 600 * dt; });
+    const maxX = L.W * TS - gViewW, tgt = p.x + p.w / 2 - gViewW * 0.4;
+    L.cam = Math.max(0, Math.min(maxX, L.cam + (tgt - L.cam) * Math.min(1, dt * 8)));
+    return !!p.swing;
+  }
   function respawn(L) {
+    L.p.swing = null;
     const p = L.p;
     p.x = L.cp.x; p.y = L.cp.y; p.vx = p.vy = p.kx = 0; p.inv = 1; p.carry = null;
     if (L.boulder.on) { L.boulder.on = false; L.shake = 0; roarStop(); }
@@ -1571,9 +1701,14 @@ mark { background: none; color: var(--berry); }
       else if (c.t > 0) { c.t += dt; if (c.t > 0.5) { c.down = 2.6; c.t = 0; c.fallY = 0; } }
     }
     const dir = (gIn.r ? 1 : 0) - (gIn.l ? 1 : 0);
-    if (dir) p.face = dir;
+    p.whipT = Math.max(0, p.whipT - dt); p.whipCd = Math.max(0, p.whipCd - dt); p.flyT = Math.max(0, p.flyT - dt);
+    if (gIn.whip) { gIn.whip = false; if (p.whipCd <= 0) whipNow(L, p); }
+    if (p.swing) { if (swingStep(L, p, dir, dt)) return; }
+    if (dir && !p.swing) p.face = dir;
     const target = dir * 170;
-    p.vx += Math.sign(target - p.vx) * Math.min(Math.abs(target - p.vx), 1800 * dt);
+    // Eis: rutschig. Nach dem Schwingen: kurz Schwung behalten.
+    const acc = p.flyT > 0 ? (dir && Math.sign(dir) !== Math.sign(p.vx) ? 600 : 0) : (p.onIce && p.onGround ? 380 : 1800);
+    p.vx += Math.sign(target - p.vx) * Math.min(Math.abs(target - p.vx), acc * dt);
     p.kx *= Math.pow(0.02, dt);
     gIn.buf -= dt; p.coyote -= dt; p.inv -= dt; p.squash *= Math.pow(0.002, dt);
     if (p.bub) { p.bub.t -= dt; if (p.bub.t <= 0) p.bub = null; }
@@ -1584,7 +1719,7 @@ mark { background: none; color: var(--berry); }
     resolveX(L, p);
     const prevB = p.y + p.h, was = p.onGround;
     p.y += p.vy * dt;
-    p.onGround = false; p.carry = null;
+    p.onGround = false; p.carry = null; p.onIce = false;
     resolveY(L, p, prevB);
     if (!p.onGround && p.vy >= 0) L.movers.forEach((m) => {
       if (p.x + p.w > m.x + 2 && p.x < m.x + m.w - 2 && prevB <= m.y + 0.5 && p.y + p.h >= m.y) { p.y = m.y - p.h; p.vy = 0; p.onGround = true; p.carry = m; }
@@ -1595,20 +1730,29 @@ mark { background: none; color: var(--berry); }
     const hz = (x, y) => { const ch = tAt(L, Math.floor(x / TS), Math.floor(y / TS)); return ch === "~" || (ch === "^" && y % TS > 14); };
     if (p.y > WH + 40 || hz(p.x + 4, p.y + p.h - 2) || hz(p.x + p.w - 4, p.y + p.h - 2)) { respawn(L); return; }
 
+    L.jumpers.forEach((j) => {
+      // springt ~1 s hoch, dann ~2 s Pause zum Drüberspringen
+      j.t += dt; const ph = (j.t % 3.2) / 3.2;
+      j.y = ph < 0.34 ? j.base - Math.sin(ph / 0.34 * Math.PI) * 175 : j.base + 40;
+      if (p.inv <= 0 && Math.hypot(j.x - (p.x + p.w / 2), j.y - (p.y + p.h / 2)) < 22) { p.inv = 1.2; p.vy = Math.min(p.vy, -320); bubble(L, "Heiss!"); tone(180, 0, .2, "sawtooth", .07); }
+    });
     L.enemies.forEach((e) => {
       if (e.stun > 0) e.stun -= dt;
-      else {
+      else if (e.fly) {
+        e.x += e.vx * dt; if (Math.abs(e.x - e.x0) > 90) { e.x = e.x0 + Math.sign(e.x - e.x0) * 90; e.vx *= -1; }
+        e.y = e.y0 + Math.sin(L.t * 4 + e.x0) * 7;
+      } else {
         const nx = e.x + e.vx * dt, front = e.vx > 0 ? nx + e.w : nx;
         const tx = Math.floor(front / TS), ty = Math.floor((e.y + e.h - 1) / TS);
-        if (isFull(tAt(L, tx, ty)) || tAt(L, tx, ty + 1) !== "#") e.vx *= -1; else e.x = nx;
+        if (isFull(tAt(L, tx, ty)) || !isFull(tAt(L, tx, ty + 1))) e.vx *= -1; else e.x = nx;
       }
       if (hit(p, e)) {
         if (p.vy > 0 && p.y + p.h - e.y < 14) { e.stun = 2.5; p.vy = -380; tone(700, 0, .08, "sine", .15); tone(1000, .06, .1, "sine", .12); burst(L, e.x + 12, e.y, "#FFC233", 6, "★"); }
-        else if (e.stun <= 0 && p.inv <= 0) { p.inv = 1.2; p.kx = (p.x + p.w / 2 < e.x + e.w / 2 ? -1 : 1) * 260; p.vy = -260; bubble(L, "Autsch!"); tone(180, 0, .2, "sawtooth", .07); }
+        else if (e.stun <= 0 && p.inv <= 0) hurt(L, p, e.x + e.w / 2);
       }
     });
     L.gems.forEach((g) => { if (!g.got && Math.abs(g.x - (p.x + p.w / 2)) < 18 && Math.abs(g.y - (p.y + p.h / 2)) < 22) { g.got = true; L.got++; tone(1320, 0, .08, "triangle", .12); burst(L, g.x, g.y, "#3FD0E8", 5); } });
-    L.cps.forEach((k) => { if (!k.on && hit(p, { x: k.x, y: k.y - 20, w: TS, h: 50 })) { k.on = true; L.cp = { x: k.x + 6, y: k.y + TS - 28 }; bubble(L, "Checkpoint!"); tone(880, 0, .1, "triangle", .12); tone(1175, .08, .15, "triangle", .12); } });
+    L.cps.forEach((k) => { if (!k.on && p.x + p.w > k.x && p.x < k.x + TS && p.y < k.y + TS) { k.on = true; L.cp = { x: k.x + 6, y: k.y + TS - 28 }; bubble(L, "Checkpoint!"); tone(880, 0, .1, "triangle", .12); tone(1175, .08, .15, "triangle", .12); } });
     L.torches.forEach((tc) => { if (!tc.lit && Math.abs(tc.x - (p.x + p.w / 2)) < 26 && Math.abs(tc.y - (p.y + p.h)) < 40) { tc.lit = true; bubble(L, "Licht an!"); chime(); } });
     for (const g of L.gates) {
       if (g.open) g.op = Math.min(1, g.op + dt * 1.2);
@@ -1649,6 +1793,11 @@ mark { background: none; color: var(--berry); }
       } else if (th.deco === "rock") {
         c.beginPath(); c.moveTo(x + 30, 0); c.lineTo(x + 50, 40 + r * 70); c.lineTo(x + 70, 0); c.fill();
         c.beginPath(); c.moveTo(x + 90, WH); c.lineTo(x + 110, WH - 50 - r * 60); c.lineTo(x + 130, WH); c.fill();
+      } else if (th.deco === "pine") {
+        c.beginPath(); c.moveTo(x + 66, WH - h - 50); c.lineTo(x + 30, WH - 10); c.lineTo(x + 102, WH - 10); c.fill();
+        c.fillStyle = "#FFFFFF"; c.beginPath(); c.moveTo(x + 66, WH - h - 50); c.lineTo(x + 54, WH - h - 18); c.lineTo(x + 78, WH - h - 18); c.fill(); c.fillStyle = th.near;
+      } else if (th.deco === "cloud") {
+        c.beginPath(); c.arc(x + 40, WH - h, 22, 0, 7); c.arc(x + 66, WH - h - 10, 28, 0, 7); c.arc(x + 94, WH - h, 20, 0, 7); c.fill();
       } else { c.fillRect(x + 50, WH - 150 - r * 40, 26, 200); c.fillRect(x + 42, WH - 160 - r * 40, 42, 12); }
     }
   }
@@ -1665,11 +1814,21 @@ mark { background: none; color: var(--berry); }
         c.fillStyle = ch === "Q" ? "#F5B82E" : "#9C7A55"; rrect(c, X + 1, Y + 1 - bp, TS - 2, TS - 2, 4); c.fill();
         c.fillStyle = ch === "Q" ? "#C98A12" : "#7E6040"; c.fillRect(X + 1, Y + TS - 5 - bp, TS - 2, 4);
         if (ch === "Q") { c.fillStyle = "#fff"; c.font = "900 20px Grandstander, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("?", X + 15, Y + 15 - bp + Math.sin(L.t * 4) * 1); }
+      } else if (ch === "W") {
+        c.fillStyle = "#B07A45"; c.fillRect(X + 1, Y + 1, TS - 2, TS - 2);
+        c.strokeStyle = "#7A4E26"; c.lineWidth = 2.5; c.strokeRect(X + 2.5, Y + 2.5, TS - 5, TS - 5);
+        c.beginPath(); c.moveTo(X + 4, Y + 4); c.lineTo(X + TS - 4, Y + TS - 4); c.moveTo(X + TS - 4, Y + 4); c.lineTo(X + 4, Y + TS - 4); c.stroke();
+      } else if (ch === "I") {
+        c.fillStyle = th.dirt; c.fillRect(X, Y, TS + .5, TS + .5);
+        c.fillStyle = "#CFEFFF"; c.fillRect(X, Y, TS + .5, 9); c.fillStyle = "rgba(255,255,255,.85)"; c.fillRect(X + 4, Y + 2, 10, 2);
       } else if (ch === "J") {
         const sq = L.t - L.jumpT < .2 ? 4 : 0;
         c.fillStyle = "#F4E9D8"; c.fillRect(X + 10, Y + 14, 10, 16);
         c.fillStyle = "#E5484D"; c.beginPath(); c.ellipse(X + 15, Y + 16 + sq, 16, 13 - sq, 0, Math.PI, 0); c.fill();
         c.fillStyle = "#fff"; [[8, 10], [15, 6], [22, 10]].forEach(([a, b]) => { c.beginPath(); c.arc(X + a, Y + b + sq, 2.5, 0, 7); c.fill(); });
+      } else if (ch === "=" && th.cloud) {
+        c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(X + 8, Y + 6, 9, 0, 7); c.arc(X + 20, Y + 3, 11, 0, 7); c.arc(X + 30, Y + 7, 8, 0, 7); c.fill();
+        c.fillStyle = "#DCE6F6"; c.fillRect(X, Y + 9, TS + .5, 4);
       } else if (ch === "=") {
         c.fillStyle = "#8A5A2B"; c.fillRect(X, Y, TS + .5, 10); c.fillStyle = "#6E4520"; c.fillRect(X, Y + 8, TS + .5, 2); c.fillRect(X + 14, Y, 2, 10);
       } else if (ch === "B" || ch === "C") {
@@ -1683,8 +1842,9 @@ mark { background: none; color: var(--berry); }
         }
       } else if (ch === "~") {
         const surf = tAt(L, tx, ty - 1) !== "~", top = surf ? 8 : 0;
-        c.fillStyle = th.water; c.globalAlpha = .85; c.fillRect(X, Y + top, TS + .5, TS + .5 - top); c.globalAlpha = 1;
-        if (surf) { c.fillStyle = "rgba(255,255,255,.6)"; c.fillRect(X, Y + 8 + Math.sin(L.t * 3 + tx) * 2, TS, 2); }
+        c.fillStyle = th.water; c.globalAlpha = th.lava ? 1 : .85; c.fillRect(X, Y + top, TS + .5, TS + .5 - top); c.globalAlpha = 1;
+        if (surf) { c.fillStyle = th.lava ? "#FFC23D" : "rgba(255,255,255,.6)"; c.fillRect(X, Y + 8 + Math.sin(L.t * 3 + tx) * 2, TS, th.lava ? 3 : 2); }
+        if (surf && th.lava && rnd(tx + Math.floor(L.t * 2)) > .8) { c.fillStyle = "#FFD86B"; c.beginPath(); c.arc(X + 15, Y + 12, 3, 0, 7); c.fill(); }
       } else if (ch === "^") {
         c.fillStyle = "#8C8C99"; c.beginPath();
         for (let i = 0; i < 3; i++) { c.moveTo(X + i * 10, Y + TS); c.lineTo(X + i * 10 + 5, Y + 14); c.lineTo(X + i * 10 + 10, Y + TS); }
@@ -1805,11 +1965,18 @@ mark { background: none; color: var(--berry); }
       emoji(c, g.pr.ico, g.x + 15, g.y + 26 - g.op * 80 + Math.sin(t * 3) * 3, 34);
       c.globalAlpha = 1;
     });
+    L.hooks.forEach((h) => {
+      const near = Math.hypot(h.x - (p.x + p.w / 2), h.y - (p.y + p.h / 2)) < 205;
+      c.strokeStyle = "#6B4423"; c.lineWidth = 3; c.beginPath(); c.moveTo(h.x, h.y - 14); c.lineTo(h.x, h.y - 6); c.stroke();
+      if (near) { c.fillStyle = "rgba(255,215,0,.35)"; c.beginPath(); c.arc(h.x, h.y, 14 + Math.sin(t * 6) * 2, 0, 7); c.fill(); }
+      c.strokeStyle = "#F5B82E"; c.lineWidth = 4; c.beginPath(); c.arc(h.x, h.y, 7, 0, 7); c.stroke();
+    });
+    L.jumpers.forEach((j) => { if (j.y < j.base - 6) emoji(c, "🔥", j.x, j.y, 26); });
     L.enemies.forEach((e) => {
       c.save(); c.translate(e.x + e.w / 2, e.y + e.h / 2);
       if (e.vx > 0) c.scale(-1, 1);
       if (e.stun > 0) c.rotate(Math.sin(t * 10) * .4);
-      emoji(c, L.th.enemy, 0, 0, 24);
+      emoji(c, e.fly ? (L.th.flyer || "🐝") : L.th.enemy, 0, 0, 24);
       c.restore();
       if (e.stun > 0) emoji(c, "💫", e.x + e.w / 2, e.y - 8, 16);
     });
@@ -1827,6 +1994,15 @@ mark { background: none; color: var(--berry); }
       c.fillStyle = "#A39A90"; c.beginPath(); c.arc(-14, -18, 7, 0, 7); c.fill();
       c.restore();
     }
+    // Peitsche bzw. Seil zum Ring
+    if (p.swing || p.whipT > 0) {
+      const hx = p.x + p.w / 2 + p.face * 5, hy = p.y + 12;
+      c.strokeStyle = "#5A3518"; c.lineWidth = 2.5; c.lineCap = "round"; c.beginPath(); c.moveTo(hx, hy);
+      if (p.swing) c.lineTo(p.swing.hx, p.swing.hy);
+      else { const k2 = 1 - p.whipT / 0.28, len = 86 * Math.sin(Math.min(1, k2 * 1.6) * Math.PI / 2); c.quadraticCurveTo(hx + p.face * len * .5, hy - 18 + k2 * 20, hx + p.face * len, hy + 4 - k2 * 6); }
+      c.stroke();
+      if (!p.swing && p.whipT < 0.14) emoji(c, "💥", p.x + p.w / 2 + p.face * 86, p.y + 14, 16);
+    }
     drawPlayer(c, p, t);
     L.parts.forEach((q) => { c.globalAlpha = Math.max(0, q.life / .8); if (q.txt) { c.fillStyle = q.col; c.font = "bold 14px sans-serif"; c.textAlign = "center"; c.fillText(q.txt, q.x, q.y); } else { c.fillStyle = q.col; c.beginPath(); c.arc(q.x, q.y, 3, 0, 7); c.fill(); } });
     c.globalAlpha = 1;
@@ -1835,7 +2011,7 @@ mark { background: none; color: var(--berry); }
       const bx = Math.max(L.cam + 6, Math.min(L.cam + gViewW - w - 6, p.x + p.w / 2 - w / 2));
       c.fillStyle = "#fff"; rrect(c, bx, by, w, 22, 10); c.fill();
       c.beginPath(); c.moveTo(p.x + p.w / 2 - 5, by + 22); c.lineTo(p.x + p.w / 2, by + 28); c.lineTo(p.x + p.w / 2 + 5, by + 22); c.fill();
-      c.fillStyle = "#1C2944"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(p.bub.txt, p.x + p.w / 2, by + 11);
+      c.fillStyle = "#1C2944"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(p.bub.txt, bx + w / 2, by + 11);
     }
     if (th.dark) {
       const d = dctx; d.setTransform(1, 0, 0, 1, 0, 0); d.globalCompositeOperation = "source-over";
@@ -1845,6 +2021,9 @@ mark { background: none; color: var(--berry); }
       hole(p.x + p.w / 2, p.y + p.h / 2, 95);
       L.torches.forEach((q) => hole(q.x, q.y - 30, q.lit ? 125 + Math.sin(t * 8) * 4 : 26));
       L.gems.forEach((g) => !g.got && hole(g.x, g.y, 16));
+      if (th.lava) { const x0 = Math.max(0, Math.floor(L.cam / TS)), x1 = Math.min(L.W - 1, Math.ceil((L.cam + gViewW) / TS)); for (let tx = x0; tx <= x1; tx++) if (L.g[8][tx] === "~") hole(tx * TS + 15, 8 * TS + 10, 45); }
+      L.hooks.forEach((h) => hole(h.x, h.y, 22));
+      L.jumpers.forEach((j) => j.y < j.base && hole(j.x, j.y, 50));
       if (L.goal) hole(L.goal.x + 15, L.goal.y + 8, 45);
       c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(dark, 0, 0);
     }
@@ -1873,6 +2052,9 @@ mark { background: none; color: var(--berry); }
     for (let s = 0; s < n && gameRun; s++) gUpdate(GL, dt / n);
     gDraw(GL);
     if (gameRun) gameRaf = requestAnimationFrame(frame);
+    // Safari blendet Leisten ein/aus oder das Gerät dreht sich: dann Grösse neu nehmen (sonst verzerrt).
+    const wr = $("gameWrap");
+    if (Math.round(wr.clientWidth * gDpr) !== gc.width || Math.round(wr.clientHeight * gDpr) !== gc.height) sizeGame();
   }
   function startLoop() { if (gameRun || !GL) return; gameRun = true; gameLast = performance.now(); gameRaf = requestAnimationFrame(frame); }
   function stopLoop() { gameRun = false; cancelAnimationFrame(gameRaf); }
@@ -1883,22 +2065,23 @@ mark { background: none; color: var(--berry); }
   }
   function winLevel(L) {
     stopGame();
-    const i = L.i, first = !S.game.done.includes(i), last = i === LEVELS.length - 1;
+    const i = L.i, first = !S.game.done.includes(i), last = i === LEVELS.length - 1 || i === 5;
     if (first) { S.game.done.push(i); addPride(`Expedition geschafft: ${L.def.name}`, true); }
     S.stats.levels++;
     const got = award("game", 3, 9); save();
     ovNext = () => go("map");
-    celebrate(last ? "Du hast den goldenen Löwen gefunden!" : `${L.def.goal} Gefunden!`, got ? `+${got} ★` : "",
+    celebrate(i === LEVELS.length - 1 ? "Du hast die goldene Krone gefunden!" : i === 5 ? "Du hast den goldenen Löwen gefunden!" : `${L.def.goal} Gefunden!`, got ? `+${got} ★` : "",
       `${L.got} von ${L.gems.length + L.qs} Edelsteinen. ` + (last ? `${heroOf().name}, du bist ein echtes Löwenherz!` : `${heroOf().name}, du warst richtig mutig!`));
   }
   function renderMap() {
     const done = S.game.done;
     $("expMap").innerHTML = LEVELS.map((l, i) => {
-      const open = i === 0 || done.includes(i - 1), ok = done.includes(i);
-      return (i ? '<div class="path"></div>' : "") + `<button class="stop" data-lv="${i}"${open ? "" : " disabled"}><span class="ico">${open ? l.ico : "🔒"}</span><span><b>${i + 1}. ${l.name}</b><small>${l.sub}</small></span><span class="st">${ok ? "⭐" : open ? "▶️" : ""}</span></button>`;
+      const open = i === 0 || done.includes(i - 1), ok = done.includes(i), w = l.world || 0;
+      const head = (i === 0 || (LEVELS[i - 1].world || 0) !== w) ? `<div class="worldhead"><span>${WORLDS[w].ico}</span> Welt ${w + 1}: ${WORLDS[w].name}</div>` : '<div class="path"></div>';
+      return head + `<button class="stop" data-lv="${i}"${open ? "" : " disabled"}><span class="ico">${open ? l.ico : "🔒"}</span><span><b>${i + 1}. ${l.name}</b><small>${l.sub}</small></span><span class="st">${ok ? "⭐" : open ? "▶️" : ""}</span></button>`;
     }).join("");
   }
-  enter.map = () => { renderHeroPick(); renderMap(); speak("Die Dschungel-Expedition! Wer spielt heute, Matteo oder Elara? Finde den goldenen Löwen!"); };
+  enter.map = () => { renderHeroPick(); renderMap(); speak("Die grosse Expedition! Wer spielt heute, Matteo oder Elara? Vier Welten warten auf dich!"); };
   $("expMap").addEventListener("click", (e) => { const b = e.target.closest("[data-lv]"); if (!b || b.disabled) return; pop(); GL = loadLevel(+b.dataset.lv); go("game"); });
   enter.game = () => {
     if (!GL) return go("map");
@@ -1907,6 +2090,7 @@ mark { background: none; color: var(--berry); }
     gDraw(GL); speak(`${GL.def.name}. ${GL.def.intro}`); startLoop();
   };
   window.addEventListener("resize", () => { if (current === "game" && GL) { sizeGame(); gDraw(GL); } });
+  if (window.ResizeObserver) new ResizeObserver(() => { if (current === "game" && GL) { sizeGame(); gDraw(GL); } }).observe($("gameWrap"));
   function bindPad(id, key) {
     const b = $(id);
     const on = (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} b.classList.add("on"); ctx(); if (key === "j") gIn.buf = 0.15; else gIn[key] = true; };
@@ -1914,7 +2098,9 @@ mark { background: none; color: var(--berry); }
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off);
     b.addEventListener("contextmenu", (e) => e.preventDefault());
   }
-  bindPad("gJ", "j"); bindPad("gB", "j");
+  bindPad("gJ", "j");
+  { const b = $("gB"); b.addEventListener("pointerdown", (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} b.classList.add("on"); ctx(); gIn.whip = true; });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => b.addEventListener(ev, () => b.classList.remove("on"))); b.addEventListener("contextmenu", (e) => e.preventDefault()); }
   // Steuerkreuz: eine Fläche, Richtung aus der Fingerposition (Daumen kann rutschen)
   const dp = $("dpad"); let dpId = null;
   function padReset() { gIn.l = gIn.r = false; dpId = null; dp.classList.remove("on-l", "on-r", "on-u"); document.querySelectorAll(".pbtn.on").forEach((b) => b.classList.remove("on")); }
@@ -1929,8 +2115,8 @@ mark { background: none; color: var(--berry); }
   dp.addEventListener("pointermove", (e) => { if (e.pointerId === dpId) dpSet(e); });
   ["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => dp.addEventListener(ev, (e) => { if (e.pointerId === dpId) padReset(); }));
   dp.addEventListener("contextmenu", (e) => e.preventDefault());
-  const KEYS = { ArrowLeft: "l", a: "l", ArrowRight: "r", d: "r", ArrowUp: "j", w: "j", " ": "j" };
-  document.addEventListener("keydown", (e) => { const k = KEYS[e.key]; if (current !== "game" || !k || !$("gateBox").hidden) return; e.preventDefault(); if (k === "j") { if (!e.repeat) gIn.buf = 0.15; } else gIn[k] = true; });
+  const KEYS = { ArrowLeft: "l", a: "l", ArrowRight: "r", d: "r", ArrowUp: "j", w: "j", " ": "j", x: "b", b: "b", Shift: "b" };
+  document.addEventListener("keydown", (e) => { const k = KEYS[e.key]; if (current !== "game" || !k || !$("gateBox").hidden) return; e.preventDefault(); if (k === "j") { if (!e.repeat) gIn.buf = 0.15; } else if (k === "b") { if (!e.repeat) gIn.whip = true; } else gIn[k] = true; });
   document.addEventListener("keyup", (e) => { const k = KEYS[e.key]; if (k && k !== "j") gIn[k] = false; });
 
   if (location.hash === "#debug") window.__lh = () => GL;
