@@ -1,5 +1,5 @@
 // Löwenherz – Offline-Speicher. VERSION wird bei neuer KI-Stimme automatisch angepasst.
-const VERSION = "loewenherz-bf036176";
+const VERSION = "loewenherz-1d9d72d4";
 const FILES = [
   "./index.html", "./manifest.webmanifest",
   "./icon.svg", "./icon-180.png", "./icon-192.png", "./icon-512.png",
