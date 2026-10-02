@@ -1456,7 +1456,7 @@ mark { background: none; color: var(--berry); }
         .ground(39, 58).row(6, 5, 2, "Q").put(43, 5, "Q").row(100, 5, 2, "Q").put(46, 7, "G").put(51, 7, "^").put(52, 7, "^").gems(5, 51, 52).put(55, 7, "E")
         .ground(61, 75).ground(64, 67, 7).ground(67, 70, 6).ground(70, 73, 5).gems(3, 68).put(72, 4, "K")
         .put(75, 7, "M")
-        .ground(79, 110).put(85, 7, "G").put(90, 7, "^").put(91, 7, "^").put(96, 7, "E").gems(5, 90, 91).put(104, 7, "X") },
+        .ground(79, 110).put(85, 7, "G").put(87, 7, "K").put(90, 7, "^").put(91, 7, "^").put(96, 7, "E").gems(5, 90, 91).put(104, 7, "X") },
     { name: "Die rollende Steinkugel", sub: "Lauf, so schnell du kannst!", ico: "🪨", goal: "🔑", theme: "jungle",
       intro: "Achtung, gleich rollt eine riesige Steinkugel! Lauf so schnell du kannst nach rechts und spring über alles drüber!",
       gates: [{ t: "hold", ico: "🪨", text: "Hörst du das Rumpeln? Gleich kommt eine riesige Steinkugel! Halte den Mut-Knopf und ruf: ICH BIN SCHNELL!" }],
@@ -1626,7 +1626,7 @@ mark { background: none; color: var(--berry); }
     L.parts = L.parts.filter((q) => q.life > 0);
     const maxX = L.W * TS - gViewW, tgt = p.x + p.w / 2 - gViewW * 0.4;
     L.cam = maxX <= 0 ? maxX / 2 : Math.max(0, Math.min(maxX, L.cam + (tgt - L.cam) * Math.min(1, dt * 8)));
-    if (L.goal && hit(p, { x: L.goal.x - 6, y: L.goal.y - 90, w: TS + 12, h: 120 })) winLevel(L);
+    if (L.goal && p.x + p.w > L.goal.x - 6 && p.x < L.goal.x + TS + 6 && p.y < L.goal.y + TS) winLevel(L); // ganze Spalte über dem Schatz zählt
   }
 
   /* Zeichnen */
