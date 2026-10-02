@@ -308,8 +308,41 @@ mark { background: none; color: var(--berry); }
 .hero { display: grid; justify-items: center; gap: 2px; padding: 10px 16px 12px; border-radius: 22px; background: var(--card); box-shadow: var(--shadow); border: 4px solid transparent; }
 .hero b { font-family: var(--f-display); font-size: 22px; }
 .hero[aria-pressed="true"] { border-color: var(--sun); background: color-mix(in srgb, var(--sun) 22%, var(--card)); }
-.gamewrap { position: relative; border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); background: #0B1020; }
-#game { display: block; width: 100%; touch-action: none; }
+/* Spiel im Vollbild: Bild bis an den Rand, darunter ein Gameboy-Bedienfeld (bewusst feste Gameboy-Farben) */
+.screen[data-screen="game"] { position: fixed; left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + 78px); bottom: 0; gap: 0; z-index: 4; }
+.gamewrap { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; background: #0B1020; }
+#game { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+.gb { flex: none; position: relative; background: #CFCCC4; border-top: 5px solid #B8B5AC; padding: 30px 22px calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: space-between; align-items: center; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
+.gb-brand { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-family: var(--f-display); font-weight: 900; font-style: italic; font-size: 13px; letter-spacing: .12em; color: #2E2F7A; }
+.gb-brand span { color: #9E2A50; font-size: 11px; letter-spacing: .06em; }
+.dpad { position: relative; width: 150px; height: 150px; flex: none; touch-action: none; }
+.dpad .bar { position: absolute; background: #2A2A30; border-radius: 8px; box-shadow: 0 5px 0 #141418, inset 0 2px 0 rgba(255,255,255,.12); }
+.dpad .bar.h { left: 0; right: 0; top: 50px; height: 50px; }
+.dpad .bar.v { top: 0; bottom: 0; left: 50px; width: 50px; }
+.dpad .dimple { position: absolute; left: 62px; top: 62px; width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #1C1C21, #34343B); }
+.dpad .ar { position: absolute; width: 0; height: 0; border: 9px solid transparent; opacity: .55; }
+.dpad .ar.u { left: 66px; top: 8px; border-bottom: 12px solid #8A8A96; border-top: 0; }
+.dpad .ar.d { left: 66px; bottom: 8px; border-top: 12px solid #8A8A96; border-bottom: 0; }
+.dpad .ar.l { top: 66px; left: 8px; border-right: 12px solid #8A8A96; border-left: 0; }
+.dpad .ar.r { top: 66px; right: 8px; border-left: 12px solid #8A8A96; border-right: 0; }
+.dpad.on-l .ar.l, .dpad.on-r .ar.r, .dpad.on-u .ar.u { opacity: 1; border-left-color: transparent; }
+.dpad.on-l .ar.l { border-right-color: #F5D04C; } .dpad.on-r .ar.r { border-left-color: #F5D04C; } .dpad.on-u .ar.u { border-bottom-color: #F5D04C; border-left-color: transparent; }
+.dpad.on-l { transform: rotate(-3deg); } .dpad.on-r { transform: rotate(3deg); } .dpad.on-u { transform: translateY(2px); }
+.ab { display: flex; gap: 18px; transform: rotate(-22deg); margin-right: 4px; }
+.abk { display: grid; justify-items: center; gap: 6px; }
+.abk.a { margin-top: -34px; }
+.abk small { font-family: var(--f-display); font-weight: 900; font-size: 18px; color: #2E2F7A; transform: rotate(22deg); }
+.pbtn.gbb { width: 82px; height: 82px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #C2416E, #8E2147); box-shadow: 0 6px 0 #5E1430, inset 0 2px 0 rgba(255,255,255,.25); font-size: 0; }
+.pbtn.gbb.on { transform: translateY(4px); box-shadow: 0 2px 0 #5E1430; }
+@media (max-width: 370px) { .dpad { transform: scale(.85); margin-left: -10px; } .pbtn.gbb { width: 70px; height: 70px; } }
+@media (orientation: landscape) and (max-height: 500px) {
+  .screen[data-screen="game"] { flex-direction: row; }
+  .gb { order: -1; width: 0; padding: 0; border: 0; }
+  .gb-brand { display: none; }
+  .dpad, .ab { position: fixed; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 6; opacity: .85; }
+  .dpad { left: calc(14px + env(safe-area-inset-left, 0px)); }
+  .ab { right: calc(18px + env(safe-area-inset-right, 0px)); }
+}
 .pad { display: flex; justify-content: space-between; align-items: center; gap: 12px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .pad .grp { display: flex; gap: 14px; }
 .pbtn { width: 80px; height: 80px; border-radius: 50%; background: var(--card); box-shadow: var(--shadow); font-size: 34px; display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -462,12 +495,16 @@ mark { background: none; color: var(--berry); }
   <!-- DSCHUNGEL-EXPEDITION: SPIEL -->
   <section class="screen" data-screen="game" hidden>
     <div class="gamewrap" id="gameWrap"><canvas id="game" aria-label="Spielfeld"></canvas></div>
-    <div class="pad">
-      <div class="grp">
-        <button class="pbtn" id="gL" aria-label="Nach links">◀</button>
-        <button class="pbtn" id="gR" aria-label="Nach rechts">▶</button>
+    <div class="gb">
+      <div class="gb-brand" aria-hidden="true">LÖWENHERZ <span>Expedition</span></div>
+      <div class="dpad" id="dpad" role="group" aria-label="Steuerkreuz: links, rechts, oben springt">
+        <span class="bar h"></span><span class="bar v"></span><span class="dimple"></span>
+        <i class="ar u"></i><i class="ar d"></i><i class="ar l"></i><i class="ar r"></i>
       </div>
-      <button class="pbtn jump" id="gJ" aria-label="Springen">⤴</button>
+      <div class="ab">
+        <div class="abk b"><button class="pbtn gbb" id="gB" aria-label="Springen (B)"></button><small>B</small></div>
+        <div class="abk a"><button class="pbtn gbb" id="gJ" aria-label="Springen (A)"></button><small>A</small></div>
+      </div>
     </div>
   </section>
 
@@ -973,6 +1010,7 @@ mark { background: none; color: var(--berry); }
     stopTimers(); stopMirror(); stopRec(); stopGame();
     stopSpeak();
     document.querySelectorAll("[data-screen]").forEach((s) => (s.hidden = s.dataset.screen !== name));
+    document.body.classList.toggle("gaming", name === "game");
     $("homeBtn").hidden = name === "home";
     current = name;
     window.scrollTo({ top: 0 });
@@ -1594,7 +1632,7 @@ mark { background: none; color: var(--berry); }
   /* Zeichnen */
   const gc = $("game"), gx = gc.getContext("2d");
   const dark = document.createElement("canvas"), dctx = dark.getContext("2d");
-  let gScale = 1, gViewW = 400, gDpr = 1;
+  let gScale = 1, gViewW = 400, gViewH = WH, gOffY = 0, gDpr = 1;
   function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
   function drawBack(c, L) {
     const th = L.th, W = gViewW;
@@ -1736,10 +1774,12 @@ mark { background: none; color: var(--berry); }
     const c = gx, th = L.th, k = gScale * gDpr, t = L.t, p = L.p;
     const sh = L.shake ? (Math.random() - .5) * L.shake * 2 : 0;
     c.setTransform(k, 0, 0, k, 0, 0);
-    const gr = c.createLinearGradient(0, 0, 0, WH); gr.addColorStop(0, th.sky[0]); gr.addColorStop(1, th.sky[1]);
-    c.fillStyle = gr; c.fillRect(0, 0, gViewW + 1, WH);
+    const gr = c.createLinearGradient(0, 0, 0, gViewH); gr.addColorStop(0, th.sky[0]); gr.addColorStop(1, th.sky[1]);
+    c.fillStyle = gr; c.fillRect(0, 0, gViewW + 1, gViewH + 1);
+    if (th.dark && gOffY > 0) { c.fillStyle = th.dirt2; c.fillRect(0, 0, gViewW + 1, gOffY + 1); }
+    c.setTransform(k, 0, 0, k, 0, gOffY * k);
     drawBack(c, L);
-    c.setTransform(k, 0, 0, k, (-L.cam + sh) * k, sh * k * .5);
+    c.setTransform(k, 0, 0, k, (-L.cam + sh) * k, (gOffY + sh * .5) * k);
     drawTiles(c, L);
     L.movers.forEach((m) => { c.fillStyle = "#7D6A55"; rrect(c, m.x, m.y, m.w, 12, 3); c.fill(); c.fillStyle = "#A08A70"; c.fillRect(m.x + 2, m.y, m.w - 4, 3); });
     L.cps.forEach((q) => {
@@ -1791,7 +1831,8 @@ mark { background: none; color: var(--berry); }
     L.parts.forEach((q) => { c.globalAlpha = Math.max(0, q.life / .8); if (q.txt) { c.fillStyle = q.col; c.font = "bold 14px sans-serif"; c.textAlign = "center"; c.fillText(q.txt, q.x, q.y); } else { c.fillStyle = q.col; c.beginPath(); c.arc(q.x, q.y, 3, 0, 7); c.fill(); } });
     c.globalAlpha = 1;
     if (p.bub) {
-      c.font = "800 13px Nunito, sans-serif"; const w = c.measureText(p.bub.txt).width + 16, bx = p.x + p.w / 2 - w / 2, by = p.y - 66;
+      c.font = "800 13px Nunito, sans-serif"; const w = c.measureText(p.bub.txt).width + 16, by = p.y - 66;
+      const bx = Math.max(L.cam + 6, Math.min(L.cam + gViewW - w - 6, p.x + p.w / 2 - w / 2));
       c.fillStyle = "#fff"; rrect(c, bx, by, w, 22, 10); c.fill();
       c.beginPath(); c.moveTo(p.x + p.w / 2 - 5, by + 22); c.lineTo(p.x + p.w / 2, by + 28); c.lineTo(p.x + p.w / 2 + 5, by + 22); c.fill();
       c.fillStyle = "#1C2944"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(p.bub.txt, p.x + p.w / 2, by + 11);
@@ -1800,7 +1841,7 @@ mark { background: none; color: var(--berry); }
       const d = dctx; d.setTransform(1, 0, 0, 1, 0, 0); d.globalCompositeOperation = "source-over";
       d.fillStyle = "rgba(4,6,16,0.93)"; d.fillRect(0, 0, dark.width, dark.height);
       d.globalCompositeOperation = "destination-out";
-      const hole = (wx, wy, r) => { const sx = (wx - L.cam) * k, sy = wy * k, rr = r * k; const g2 = d.createRadialGradient(sx, sy, rr * .3, sx, sy, rr); g2.addColorStop(0, "rgba(0,0,0,1)"); g2.addColorStop(1, "rgba(0,0,0,0)"); d.fillStyle = g2; d.beginPath(); d.arc(sx, sy, rr, 0, 7); d.fill(); };
+      const hole = (wx, wy, r) => { const sx = (wx - L.cam) * k, sy = (wy + gOffY) * k, rr = r * k; const g2 = d.createRadialGradient(sx, sy, rr * .3, sx, sy, rr); g2.addColorStop(0, "rgba(0,0,0,1)"); g2.addColorStop(1, "rgba(0,0,0,0)"); d.fillStyle = g2; d.beginPath(); d.arc(sx, sy, rr, 0, 7); d.fill(); };
       hole(p.x + p.w / 2, p.y + p.h / 2, 95);
       L.torches.forEach((q) => hole(q.x, q.y - 30, q.lit ? 125 + Math.sin(t * 8) * 4 : 26));
       L.gems.forEach((g) => !g.got && hole(g.x, g.y, 16));
@@ -1818,12 +1859,12 @@ mark { background: none; color: var(--berry); }
   let GL = null, gameRun = false, gameRaf = 0, gameLast = 0;
   const gIn = { l: false, r: false, buf: 0 };
   function sizeGame() {
-    const w = $("gameWrap").clientWidth || 360;
-    const h = Math.round(Math.max(200, Math.min(w * 0.75, innerHeight - 230)));
+    const wrap = $("gameWrap"), w = wrap.clientWidth || 360, h = Math.max(180, wrap.clientHeight || Math.round(w * 0.75));
     gDpr = Math.min(2, devicePixelRatio || 1);
-    gc.width = Math.round(w * gDpr); gc.height = Math.round(h * gDpr); gc.style.height = h + "px";
+    gc.width = Math.round(w * gDpr); gc.height = Math.round(h * gDpr);
     dark.width = gc.width; dark.height = gc.height;
-    gScale = h / WH; gViewW = w / gScale;
+    // Mindestens ~10 Kacheln Sicht in der Breite; was in der Höhe übrig bleibt, wird Himmel.
+    gScale = Math.min(h / WH, w / 290); gViewW = w / gScale; gViewH = h / gScale; gOffY = gViewH - WH;
   }
   function frame(now) {
     if (!gameRun) return;
@@ -1836,8 +1877,7 @@ mark { background: none; color: var(--berry); }
   function startLoop() { if (gameRun || !GL) return; gameRun = true; gameLast = performance.now(); gameRaf = requestAnimationFrame(frame); }
   function stopLoop() { gameRun = false; cancelAnimationFrame(gameRaf); }
   function stopGame() {
-    stopLoop(); gIn.l = gIn.r = false; gIn.buf = 0;
-    document.querySelectorAll(".pbtn.on").forEach((b) => b.classList.remove("on"));
+    stopLoop(); padReset(); gIn.buf = 0;
     if (GL && GL.boulder.on) { GL.boulder.on = false; roarStop(); }
     $("gateBox").hidden = true; gateCur = null; ghHold = false;
   }
@@ -1874,7 +1914,21 @@ mark { background: none; color: var(--berry); }
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off);
     b.addEventListener("contextmenu", (e) => e.preventDefault());
   }
-  bindPad("gL", "l"); bindPad("gR", "r"); bindPad("gJ", "j");
+  bindPad("gJ", "j"); bindPad("gB", "j");
+  // Steuerkreuz: eine Fläche, Richtung aus der Fingerposition (Daumen kann rutschen)
+  const dp = $("dpad"); let dpId = null;
+  function padReset() { gIn.l = gIn.r = false; dpId = null; dp.classList.remove("on-l", "on-r", "on-u"); document.querySelectorAll(".pbtn.on").forEach((b) => b.classList.remove("on")); }
+  function dpSet(e) {
+    const r = dp.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const side = Math.abs(dx) > 10 && Math.abs(dx) >= Math.abs(dy) * 0.6, up = dy < -22 && Math.abs(dy) > Math.abs(dx);
+    gIn.l = side && dx < 0; gIn.r = side && dx > 0;
+    if (up && !dp.classList.contains("on-u")) gIn.buf = 0.15;
+    dp.classList.toggle("on-l", gIn.l); dp.classList.toggle("on-r", gIn.r); dp.classList.toggle("on-u", up);
+  }
+  dp.addEventListener("pointerdown", (e) => { e.preventDefault(); try { dp.setPointerCapture(e.pointerId); } catch (x) {} dpId = e.pointerId; ctx(); dpSet(e); });
+  dp.addEventListener("pointermove", (e) => { if (e.pointerId === dpId) dpSet(e); });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => dp.addEventListener(ev, (e) => { if (e.pointerId === dpId) padReset(); }));
+  dp.addEventListener("contextmenu", (e) => e.preventDefault());
   const KEYS = { ArrowLeft: "l", a: "l", ArrowRight: "r", d: "r", ArrowUp: "j", w: "j", " ": "j" };
   document.addEventListener("keydown", (e) => { const k = KEYS[e.key]; if (current !== "game" || !k || !$("gateBox").hidden) return; e.preventDefault(); if (k === "j") { if (!e.repeat) gIn.buf = 0.15; } else gIn[k] = true; });
   document.addEventListener("keyup", (e) => { const k = KEYS[e.key]; if (k && k !== "j") gIn[k] = false; });
@@ -1908,8 +1962,7 @@ mark { background: none; color: var(--berry); }
   /* Mut-Tore */
   let gateCur = null, ghStart = 0, ghRaf = 0, ghHold = false, ghFull = false;
   function openGate(g) {
-    stopLoop(); gIn.l = gIn.r = false;
-    document.querySelectorAll(".pbtn.on").forEach((b) => b.classList.remove("on"));
+    stopLoop(); padReset();
     gateCur = g;
     $("gIco").textContent = g.pr.ico; $("gText").textContent = g.pr.text;
     $("gSaid").hidden = g.pr.t !== "say"; $("gHold").hidden = g.pr.t !== "hold";
