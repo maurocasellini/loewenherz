@@ -20,7 +20,7 @@ STYLE = os.environ.get("TTS_STYLE", (
     "wie eine liebevolle Erzählerin für ein sechsjähriges Kind. Eher langsam und sehr deutlich. "
     "Einzelne Silben oder Laute klar und kurz aussprechen."))
 PIPER_MODEL = os.environ.get("PIPER_MODEL", "")
-PRON_VERSION = "p3"  # hochzählen, wenn sich die Aussprache-Regeln ändern
+PRON_VERSION = "p4"  # hochzählen, wenn sich die Aussprache-Regeln ändern
 
 engine = (f"openai:{OPENAI_MODEL}:{OPENAI_VOICE}" if KEY else "piper:" + os.environ.get("PIPER_NAME", os.path.basename(PIPER_MODEL))) + ":" + PRON_VERSION
 if not KEY and not PIPER_MODEL:
@@ -87,12 +87,36 @@ def is_pure_sound(t):
     return "[[" in t and not re.search(r"[A-Za-zÄÖÜäöüß]", re.sub(r"\[\[.*?\]\]", "", t))
 
 
+TRIM = ("silenceremove=start_periods=1:start_threshold=-50dB,areverse,"
+        "silenceremove=start_periods=1:start_threshold=-50dB,areverse")
+
+
+def duration(path):
+    out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
+                         capture_output=True, text=True, check=True).stdout
+    return float(out.strip() or 0)
+
+
 def to_mp3(src, mp3, stretch=False):
-    # Mono, leise Stellen am Anfang/Ende weg, Lautstärke angleichen, klein halten.
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af",
-                    "silenceremove=start_periods=1:start_threshold=-50dB,areverse,"
-                    "silenceremove=start_periods=1:start_threshold=-50dB,areverse,"
-                    + ("atempo=0.5,atempo=0.6," if stretch else "") + "loudnorm=I=-16:TP=-1.5",
+    # Mono, Stille am Anfang/Ende weg, Lautstärke angleichen, klein halten.
+    # Reine Laute ("Schhhh!") werden auf ~1,2 s gezogen, damit das Kind mitmachen kann.
+    chain = TRIM
+    if stretch:
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            trimmed = f.name
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af", TRIM, trimmed], check=True)
+        d, factor = duration(trimmed), 1.0
+        os.unlink(trimmed)
+        tempos = []
+        if d > 0:
+            factor = max(d / 1.2, 0.08)
+            while factor < 0.5:
+                tempos.append("atempo=0.5"); factor /= 0.5
+            if factor < 1:
+                tempos.append(f"atempo={factor:.3f}")
+        if tempos:
+            chain += "," + ",".join(tempos)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af", chain + ",loudnorm=I=-16:TP=-1.5",
                     "-ac", "1", "-ar", "24000", "-b:a", "48k", mp3], check=True)
 
 
