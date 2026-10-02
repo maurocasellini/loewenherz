@@ -51,7 +51,8 @@ jobs:
         run: python tools/gen-voice.py phrases.json
       - name: Offline-Speicher auffrischen
         run: |
-          v=$(sha1sum www/voice/index.json | cut -c1-8)
+          # Neue Version bei jeder Änderung an App oder Stimme -> installierte Apps laden sich neu
+          v=$(cat www/index.html www/voice/index.json | sha1sum | cut -c1-8)
           sed -i "s/const VERSION = \"loewenherz-[^\"]*\";/const VERSION = \"loewenherz-$v\";/" www/sw.js
       - name: Speichern
         run: |

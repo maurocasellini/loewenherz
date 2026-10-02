@@ -300,7 +300,7 @@ mark { background: none; color: var(--berry); }
 .stop .ico { width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; font-size: 34px; background: var(--card); box-shadow: 0 4px 0 var(--line); }
 .stop b { font-family: var(--f-display); font-size: 21px; display: block; line-height: 1.1; }
 .stop small { display: block; color: var(--muted); font-weight: 700; font-size: 14px; }
-.stop .st { font-size: 26px; }
+.stop .st { font-size: 18px; letter-spacing: -2px; white-space: nowrap; }
 .stop:disabled { opacity: .5; cursor: default; }
 .stop:not(:disabled):active { transform: translateY(3px); }
 .worldhead { font-family: var(--f-display); font-weight: 900; font-size: 20px; padding: 14px 6px 6px; color: var(--mane); }
@@ -385,7 +385,7 @@ mark { background: none; color: var(--berry); }
       <div class="small" id="progressText">Noch 10 Sterne, dann wächst dein Löwe!</div>
     </div>
     <div class="tiles">
-      <button class="tile wide" data-go="map" style="--c: var(--mane)"><span class="ico">🧭</span><b>Dschungel-Expedition</b><span>Das Abenteuer-Spiel</span></button>
+      <button class="tile wide" data-go="map" style="--c: var(--mane)"><span class="ico">🧭</span><b>Die grosse Expedition</b><span>Das Abenteuer-Spiel mit 6 Welten</span></button>
       <button class="tile wide" data-go="mission" style="--c: var(--leaf)"><span class="ico">🎯</span><b>Mut-Mission</b><span>Dein Abenteuer für heute</span></button>
       <button class="tile" data-go="roar" style="--c: var(--lion-dark)"><span class="ico">🦁</span><b>Löwen-Brüller</b><span>Sag es laut!</span></button>
       <button class="tile" data-go="feel" style="--c: var(--sea)"><span class="ico">🌦️</span><b>Gefühle-Wetter</b><span>Wie geht's dir?</span></button>
@@ -488,8 +488,8 @@ mark { background: none; color: var(--berry); }
 
   <!-- DSCHUNGEL-EXPEDITION: KARTE -->
   <section class="screen" data-screen="map" hidden>
-    <h2>Dschungel-Expedition</h2>
-    <p class="small center" style="margin:0">Finde den goldenen Löwen! Jede Station braucht ein bisschen Mut.</p>
+    <h2>Die grosse Expedition</h2>
+    <p class="small center" style="margin:0">6 Welten und unendlich viele Abenteuer. Jede Station braucht ein bisschen Mut.</p>
     <div class="heropick" id="heroPick" role="group" aria-label="Wer spielt?"></div>
     <div class="expmap" id="expMap"></div>
   </section>
@@ -628,6 +628,9 @@ mark { background: none; color: var(--berry); }
         <input type="text" id="nameInput" maxlength="24" placeholder="z.B. Luca">
         <button class="big" id="nameSave" style="--c: var(--leaf)">Speichern</button>
       </div>
+      <p class="f" style="margin:0">Laute in den Endlos-Abenteuern</p>
+      <div class="row" style="justify-content:flex-start" id="focusRow"></div>
+      <p class="small" style="margin:0">An den Mut-Toren der Endlos-Abenteuer kommen Wörter mit diesen Lauten. Am besten die, die eure Logopädin gerade übt.</p>
     </div>
     <div class="card" style="display:grid; gap:14px">
       <h3>So läuft es</h3>
@@ -971,6 +974,8 @@ mark { background: none; color: var(--berry); }
   let ovNext = null;
   function celebrate(title, plus, text, stage) {
     chime(); confetti();
+    // mitten im Spiel (z.B. Löwe wächst nach einem Mut-Tor): Spiel pausieren, bis "Weiter" getippt wird
+    if (current === "game" && gameRun && !ovNext) { stopLoop(); ovNext = () => startLoop(); }
     $("ovLion").innerHTML = lionSVG(stage == null ? stageIndex(S.stars) : stage, true);
     $("ovTitle").textContent = title;
     $("ovPlus").textContent = plus; $("ovPlus").hidden = !plus;
@@ -1013,6 +1018,7 @@ mark { background: none; color: var(--berry); }
     stopSpeak();
     document.querySelectorAll("[data-screen]").forEach((s) => (s.hidden = s.dataset.screen !== name));
     document.body.classList.toggle("gaming", name === "game");
+    if (window.__lhReload && name !== "game") { location.reload(); return; }
     $("homeBtn").hidden = name === "home";
     current = name;
     window.scrollTo({ top: 0 });
@@ -1415,10 +1421,14 @@ mark { background: none; color: var(--berry); }
     ice: { sky: ["#BFE3FF", "#F1FAFF"], far: "#D6E9F7", near: "#A9C9E3", dirt: "#8FB5D6", dirt2: "#7AA0C2", top: "#FFFFFF", water: "#5AA9E6", deco: "pine", pit: "~", enemy: "🐧", flyer: "🦉" },
     lava: { sky: ["#3B1C2E", "#9A4630"], far: "#5A2A2A", near: "#3A1B1F", dirt: "#4A3A3F", dirt2: "#382B30", top: "#6E5A5F", water: "#FF5A1F", deco: "rock", pit: "~", enemy: "🦎", flyer: "🦇", lava: true },
     lavaDark: { sky: ["#1E0F18", "#3A1A1A"], far: "#2A1418", near: "#24121A", dirt: "#4A3A3F", dirt2: "#382B30", top: "#6E5A5F", water: "#FF5A1F", deco: "rock", pit: "~", enemy: "🦎", flyer: "🦇", lava: true, dark: true },
+    dino: { sky: ["#FFD59E", "#FFF3D6"], far: "#C9A27A", near: "#5E8C3A", dirt: "#8A5A3B", dirt2: "#6E4630", top: "#7BC043", water: "#3A8FD8", deco: "fern", pit: "~", enemy: "🦖", flyer: "🦅" },
+    desert: { sky: ["#FFD27A", "#FFF4D9"], far: "#F2C27B", near: "#D9A35B", dirt: "#E3B873", dirt2: "#C99A55", top: "#F2D08F", water: "#C8A060", deco: "cactus", pit: "~", enemy: "🐍", flyer: "🦅" },
+    desertDark: { sky: ["#2A1E14", "#3E2C1C"], far: "#3A2A1A", near: "#2E2116", dirt: "#B8925A", dirt2: "#9A7848", top: "#D6B57A", water: "#C8A060", deco: "pillar", pit: "~", enemy: "🦂", flyer: "🦇", dark: true },
     sky: { sky: ["#9FD8FF", "#FFF1F8"], far: "#FFFFFF", near: "#EAF5FF", dirt: "#F4F7FF", dirt2: "#DCE6F6", top: "#FFFFFF", water: "#3A8FD8", deco: "cloud", pit: ".", enemy: "🐞", flyer: "🐝", cloud: true }
   };
   const WORLDS = [
-    { name: "Dschungel", ico: "🌴" }, { name: "Eiswelt", ico: "❄️" }, { name: "Vulkaninsel", ico: "🌋" }, { name: "Wolkenland", ico: "☁️" }
+    { name: "Dschungel", ico: "🌴" }, { name: "Eiswelt", ico: "❄️" }, { name: "Vulkaninsel", ico: "🌋" }, { name: "Wolkenland", ico: "☁️" },
+    { name: "Dino-Tal", ico: "🦖" }, { name: "Pyramiden-Wüste", ico: "🏜️" }
   ];
   const LEVELS = [
     { name: "Der Dschungelpfad", sub: "Lauf, spring und sammle Edelsteine", ico: "🌴", goal: "🗺️", theme: "jungle",
@@ -1473,18 +1483,18 @@ mark { background: none; color: var(--berry); }
       build: () => mk(120).ground(0, 104).ground(106, 120).put(1, 7, "P").put(6, 7, "G").put(10, 7, "K").put(12, 7, "R")
         .ground(20, 21, 7).ground(32, 34, 7).ground(46, 47, 7).ground(56, 58, 6).ground(70, 71, 7).put(82, 7, "^").ground(92, 95, 7)
         .gems(5, 20, 33, 46, 57, 70, 82, 93).gems(6, 26, 40, 63, 76, 88, 99).put(104, 2, "Z").put(114, 7, "X") },
-    { name: "Der goldene Löwe", sub: "Ganz oben wartet der Schatz", ico: "👑", goal: "🏆", theme: "gold",
+    { name: "Der goldene Löwe", sub: "Ganz oben wartet der Schatz", ico: "👑", goal: "🏆", theme: "gold", win: "Du hast den goldenen Löwen gefunden!",
       intro: "Spring auf die Pilze, die schleudern dich ganz hoch! Ganz oben wartet der goldene Löwe.",
       gates: [
         { t: "say", ico: "🗿", text: "Ein Steinkopf bewacht das Tor. Sag die Zauberworte: SESAM, SCHLIESS DICH AUF!", speak: "Sesam, schliess dich auf!" },
         { t: "hold", ico: "🦁", text: "Gleich hast du es geschafft! Halte den Mut-Knopf und ruf: ICH BIN EIN LÖWENHERZ!" }],
-      build: () => mk(110).ground(0, 16).put(1, 7, "P").gems(6, 4, 6, 8).put(12, 7, "J").put(5, 5, "Q").put(25, 5, "Q").row(87, 5, 3, "Q").row(13, 3, 5, "=").gems(2, 13, 14, 15, 16, 17)
+      build: () => mk(110).ground(0, 16).put(1, 7, "P").gems(6, 4, 6, 8).put(12, 8, "J").put(5, 5, "Q").put(25, 5, "Q").row(87, 5, 3, "Q").row(13, 3, 5, "=").gems(2, 13, 14, 15, 16, 17)
         .ground(16, 30).put(22, 7, "E").put(27, 7, "G")
         .put(30, 7, "M").gems(5, 32)
-        .ground(34, 50).put(38, 7, "J").row(40, 2, 4, "=").gems(1, 40, 41, 42, 43).put(45, 7, "K").put(48, 7, "E")
+        .ground(34, 50).put(38, 8, "J").row(40, 2, 4, "=").gems(1, 40, 41, 42, 43).put(45, 7, "K").put(48, 7, "E")
         .ground(53, 70).put(58, 7, "^").put(59, 7, "^").gems(4, 58, 59).ground(64, 66, 6).put(68, 7, "E")
         .row(70, 8, 12, "C").gems(6, 73, 77, 80)
-        .ground(82, 110).put(84, 7, "K").put(92, 7, "G").put(99, 7, "J").ground(100, 104, 3).put(102, 2, "X") },
+        .ground(82, 110).put(84, 7, "K").put(92, 7, "G").put(99, 8, "J").ground(100, 104, 3).put(102, 2, "X") },
 
     /* ❄️ Eiswelt */
     { world: 1, name: "Der rutschige Gletscher", sub: "Eis, Pinguine und die Peitsche", ico: "🧊", goal: "🧭", theme: "ice",
@@ -1541,12 +1551,12 @@ mark { background: none; color: var(--berry); }
       gates: [{ t: "say", ico: "☀️", text: "Die Sonne will mitspielen! Sag: SIEBEN SONNEN SCHEINEN!", speak: "Sieben Sonnen scheinen!" }],
       build: () => mk(110).ground(0, 12).put(1, 7, "P").gems(6, 4, 6).row(8, 5, 2, "Q")
         .row(13, 7, 4, "=").gems(5, 14, 15)
-        .ground(19, 30).put(21, 7, "K").put(24, 7, "E").put(28, 7, "J").row(29, 3, 6, "=").gems(2, 30, 31, 32, 33)
+        .ground(19, 30).put(21, 7, "K").put(24, 7, "E").put(28, 8, "J").row(29, 3, 6, "=").gems(2, 30, 31, 32, 33)
         .ground(37, 50).put(43, 5, "Y").put(47, 7, "G").put(49, 7, "K")
         .row(50, 8, 10, "C").gems(6, 53, 57)
         .ground(60, 75).put(62, 7, "K").put(64, 7, "W").put(68, 7, "E").put(78, 3, "H").gems(4, 77, 79)
         .ground(82, 110).put(96, 7, "E").put(100, 5, "Y").row(91, 5, 2, "Q").put(104, 7, "X") },
-    { world: 3, name: "Das Himmelsschloss", sub: "Die letzte grosse Expedition", ico: "🏰", goal: "👑", theme: "sky",
+    { world: 3, name: "Das Himmelsschloss", sub: "Die goldene Krone wartet", ico: "🏰", goal: "👑", theme: "sky", win: "Du hast die goldene Krone gefunden!",
       intro: "Das Himmelsschloss! Ganz oben liegt die goldene Krone. Nutze alles, was du gelernt hast: springen, Peitsche und schwingen!",
       gates: [
         { t: "say", ico: "🐑", text: "Ein Wolkenschaf! Sag: SCHÖNE SCHÄFCHENWOLKEN!", speak: "Schöne Schäfchenwolken!" },
@@ -1554,18 +1564,145 @@ mark { background: none; color: var(--berry); }
       build: () => mk(110).ground(0, 12).put(1, 7, "P").gems(6, 4, 6).put(8, 7, "G").put(15, 3, "H").gems(4, 14, 16)
         .ground(19, 32).put(24, 5, "Y").put(30, 7, "W").put(30, 6, "W").put(30, 5, "W").row(21, 5, 2, "Q")
         .put(32, 7, "M")
-        .ground(40, 55).put(42, 7, "K").put(47, 7, "J").row(48, 3, 5, "=").gems(2, 48, 49, 50, 51, 52).put(53, 7, "E")
+        .ground(40, 55).put(42, 7, "K").put(45, 8, "J").row(46, 3, 5, "=").gems(2, 46, 47, 48, 49, 50)
         .put(58, 3, "H").gems(4, 57, 59)
         .ground(62, 80).put(66, 7, "E").put(72, 5, "Y").put(76, 7, "W")
         .row(82, 7, 2, "=")
-        .ground(86, 110).put(88, 7, "K").put(94, 7, "G").put(100, 7, "J").ground(101, 105, 3).put(103, 2, "X") }
+        .ground(86, 110).put(88, 7, "K").put(94, 7, "G").put(100, 8, "J").ground(101, 105, 3).put(103, 2, "X") },
+
+    /* 🦖 Dino-Tal */
+    { world: 4, name: "Das Dino-Tal", sub: "Wo die Dinos wohnen", ico: "🦕", goal: "🥚", theme: "dino",
+      intro: "Willkommen im Dino-Tal! Spring den kleinen Dinos auf den Kopf oder knall die Peitsche. In den Fragezeichen stecken Überraschungen!",
+      gates: [{ t: "say", ico: "🦕", text: "Ein Baby-Dino! Er spielt mit dir, wenn du sagst: KOKOSNUSS, KÄFER, KROKODIL!", speak: "Kokosnuss, Käfer, Krokodil!" }],
+      build: () => mk(110).ground(0, 16).put(1, 7, "P").gems(6, 4, 6, 8).row(10, 5, 3, "Q")
+        .ground(19, 34).put(25, 7, "E").put(30, 7, "W").put(30, 6, "W").gems(5, 22, 27)
+        .ground(37, 52).put(39, 7, "K").put(45, 7, "G").row(47, 5, 2, "Q")
+        .put(55, 3, "H").gems(4, 54, 56)
+        .ground(59, 76).put(61, 7, "K").put(64, 7, "E").put(68, 5, "Y").put(72, 8, "J").row(73, 3, 4, "=").gems(2, 73, 74, 75, 76)
+        .ground(79, 110).put(81, 7, "K").put(88, 7, "E").row(91, 5, 3, "Q").put(96, 7, "W").put(104, 7, "X") },
+    { world: 4, name: "Die Dino-Jagd", sub: "Ein T-Rex ist hinter dir her!", ico: "🦖", goal: "🦴", theme: "dino", chaser: "🦖",
+      intro: "Oh nein, ein riesiger T-Rex! Lauf so schnell du kannst nach rechts und spring über alles drüber!",
+      gates: [{ t: "hold", ico: "🦖", text: "Ein riesiger T-Rex wacht auf! Halte den Mut-Knopf und ruf: ICH BIN SCHNELLER ALS DU!" }],
+      build: () => mk(120).ground(0, 104).ground(106, 120).put(1, 7, "P").put(6, 7, "G").put(10, 7, "K").put(12, 7, "R")
+        .ground(22, 23, 7).ground(34, 36, 7).ground(48, 49, 7).ground(60, 62, 6).ground(74, 75, 7).ground(86, 87, 7).ground(95, 97, 7)
+        .gems(5, 22, 35, 48, 61, 74, 86, 96).gems(6, 28, 42, 55, 68, 80, 91, 100).put(104, 2, "Z").put(114, 7, "X") },
+    { world: 4, name: "Der Dino-Vulkan", sub: "Bröckelnde Brücken und fliegende Saurier", ico: "🌋", goal: "🏆", theme: "dino",
+      intro: "Am Dino-Vulkan wird es knifflig: fahrende Steine, bröckelnde Brücken und Flugsaurier. Du schaffst das!",
+      gates: [{ t: "say", ico: "🦕", text: "Ein Dino will seinen Namen hören. Sag mit T: TRICERATOPS!", speak: "Triceratops!" }],
+      build: () => mk(110).ground(0, 12).put(1, 7, "P").gems(6, 4, 6).put(8, 5, "Q").put(12, 7, "M")
+        .ground(21, 36).put(23, 7, "K").put(28, 7, "E").put(33, 7, "G").gems(5, 26, 30)
+        .row(36, 8, 8, "C").gems(6, 38, 41)
+        .ground(44, 58).put(46, 7, "K").put(50, 5, "Y").row(52, 5, 3, "Q")
+        .put(61, 3, "H").gems(4, 60, 62)
+        .ground(65, 81).put(67, 7, "K").put(70, 7, "E").put(73, 8, "J").row(74, 3, 4, "=").gems(2, 74, 75, 76, 77)
+        .ground(84, 110).put(86, 7, "K").put(92, 7, "W").put(93, 7, "W").put(93, 6, "W").put(97, 5, "Y").put(104, 7, "X") },
+
+    /* 🏜️ Pyramiden-Wüste */
+    { world: 5, name: "Die heisse Wüste", sub: "Sand, Kakteen und Schlangen", ico: "🐪", goal: "🏺", theme: "desert",
+      intro: "Heiss ist es in der Wüste! Pass auf den Treibsand auf und knall die Peitsche an die Ringe.",
+      gates: [{ t: "say", ico: "🐪", text: "Ein Kamel möchte ein Lied hören. Sag: SAND, SONNE, SALAT!", speak: "Sand, Sonne, Salat!" }],
+      build: () => mk(110).ground(0, 15).put(1, 7, "P").gems(6, 4, 6, 8).row(9, 5, 2, "Q")
+        .ground(17, 34).put(19, 7, "K").put(22, 7, "E").put(25, 8, "J").row(26, 3, 4, "=").gems(2, 26, 27, 28, 29)
+        .ground(37, 52).put(39, 7, "K").put(44, 7, "G").put(48, 7, "E")
+        .put(55, 3, "H").gems(4, 54, 56)
+        .ground(59, 78).put(61, 7, "K").put(64, 7, "W").put(64, 6, "W").put(64, 5, "W").put(68, 5, "Y").row(71, 5, 2, "Q").put(75, 7, "E")
+        .put(78, 7, "M")
+        .ground(87, 110).put(89, 7, "K").put(96, 7, "E").put(104, 7, "X") },
+    { world: 5, name: "In der Pyramide", sub: "Dunkle Gänge und alte Schätze", ico: "🔺", goal: "🗝️", theme: "desertDark",
+      intro: "In der Pyramide ist es stockdunkel. Zünde die Fackeln an und finde den goldenen Schlüssel!",
+      gates: [
+        { t: "hold", ico: "🔺", text: "In der Pyramide ist es dunkel. Halte den Mut-Knopf und sag: ICH TRAU MICH!" },
+        { t: "say", ico: "🐈‍⬛", text: "Die Tempelkatze schläft! Mach ganz leise: SCHHHHH!", speak: "Schhhhhh." }],
+      build: () => {
+        const m = mk(100).row(0, 0, 100, "#").ground(0, 14).put(1, 7, "P").put(4, 7, "G").put(7, 7, "T").gems(6, 10, 12)
+          .ground(17, 32).put(18, 7, "K").put(21, 7, "T").put(26, 7, "E").put(30, 7, "W").put(30, 6, "W").put(30, 5, "W")
+          .put(35, 3, "H").gems(4, 34, 36)
+          .ground(39, 54).put(41, 7, "K").put(42, 7, "T").put(46, 5, "Q").put(49, 7, "G").put(52, 7, "E")
+          .row(54, 8, 7, "C").gems(6, 56, 59)
+          .ground(61, 78).put(63, 7, "K").put(65, 7, "T").put(70, 7, "^").put(71, 7, "^").gems(5, 70, 71).put(75, 7, "E")
+          .ground(81, 100).put(84, 7, "T").put(88, 7, "W").put(94, 7, "X");
+        [9, 24, 44, 66, 90].forEach((x) => m.put(x, 1, "#"));
+        return m;
+      } },
+    { world: 5, name: "Die Oase", sub: "Das grosse Wüsten-Finale", ico: "🌴", goal: "🏆", theme: "desert", win: "Du hast die Wüsten-Trophäe gefunden!",
+      intro: "Die Oase! Hier brauchst du alles: springen, Peitsche, schwingen und ganz viel Mut.",
+      gates: [{ t: "hold", ico: "🏜️", text: "Das letzte Tor der Wüste! Halte den Mut-Knopf und ruf ganz laut: ICH BIN EIN ENTDECKER!" }],
+      build: () => mk(110).ground(0, 12).put(1, 7, "P").gems(6, 4, 6).put(8, 5, "Q").put(15, 3, "H").gems(4, 14, 16)
+        .ground(19, 34).put(21, 7, "K").put(24, 5, "Y").put(28, 7, "E").row(30, 5, 2, "Q")
+        .put(34, 7, "M")
+        .ground(43, 58).put(45, 7, "K").put(47, 8, "J").row(48, 3, 5, "=").gems(2, 48, 49, 50, 51, 52)
+        .put(61, 3, "H").gems(4, 60, 62)
+        .ground(65, 81).put(67, 7, "K").put(69, 7, "W").put(72, 5, "Y").put(77, 7, "E")
+        .ground(84, 110).put(86, 7, "K").put(93, 7, "G").put(100, 8, "J").ground(101, 105, 3).put(103, 2, "X") }
   ];
 
+  /* ---------- Endlos-Abenteuer: jedes Mal ein neues Level aus geprüften Bausteinen ---------- */
+  const GEN_THEMES = ["jungle", "ice", "lava", "sky", "dino", "desert", "temple", "gold"];
+  const GEN_GUARD = ["Ein Wächter will ein Zauberwort hören.", "Ein Papagei möchte ein neues Wort lernen.", "Das Tor geht nur mit dem richtigen Wort auf.", "Ein freundlicher Riese versperrt den Weg."];
+  const GEN_GOALS = ["💎", "🏆", "👑", "🗝️", "🏺", "🧭", "🥚", "🌟"];
+  function genWords() {
+    const f = S.focus && S.focus.length ? S.focus : ["K", "T", "S", "SCH"];
+    const out = [];
+    SND.filter((x) => f.includes(x.id)).forEach((x) => [x.start, x.mid, x.end].forEach((arr) => arr.forEach(([w, ico]) => out.push([w, ico]))));
+    return out;
+  }
+  function genDef(n) {
+    let seed = (n * 7919 + 13) >>> 0;
+    const R = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296;
+    const pick = (a) => a[Math.floor(R() * a.length)];
+    const theme = GEN_THEMES[(n - 1) % GEN_THEMES.length], th = THEMES[theme];
+    const words = genWords();
+    const g1 = pick(words), g2 = pick(words), aff = pick(AFFIRM);
+    const gates = [
+      { t: "say", ico: g1[1], text: pick(GEN_GUARD) + " Sag ganz deutlich: " + g1[0] + "!", speak: g1[0] + "!" },
+      R() < 0.5 ? { t: "hold", ico: "🦁", text: "Halte den Mut-Knopf und ruf: " + aff } : { t: "say", ico: g2[1], text: pick(GEN_GUARD) + " Sag ganz deutlich: " + g2[0] + "!", speak: g2[0] + "!" }
+    ];
+    const hard = Math.min(1, n / 10);
+    const build = () => {
+      seed = (n * 104729 + 7) >>> 0;
+      const m = mk(132);
+      m.ground(0, 10).put(1, 7, "P").gems(6, 4, 6);
+      let x = 10, sinceK = 0, gatesLeft = 2;
+      const S_ = {
+        flat: () => { const k = 6 + Math.floor(R() * 5); m.ground(x, x + k); m.gems(6, x + 2, x + 4); if (R() < 0.6) m.put(x + Math.floor(k / 2), 7, "E"); x += k; },
+        gap: () => { const k = 2 + Math.floor(R() * (1 + hard)); m.ground(x + k, x + k + 5); m.gems(5, x + Math.floor(k / 2)); x += k + 5; },
+        qrow: () => { m.ground(x, x + 7).row(x + 2, 5, 3, "Q"); x += 7; },
+        crates: () => { m.ground(x, x + 6).put(x + 3, 7, "W").put(x + 3, 6, "W").put(x + 3, 5, "W"); x += 6; },
+        hook: () => { m.ground(x, x + 3); x += 3; m.put(x + 3, 3, "H").gems(4, x + 2, x + 4); m.ground(x + 7, x + 19); x += 19; },
+        mover: () => { m.ground(x, x + 3); x += 3; m.put(x, 7, "M"); m.ground(x + 9, x + 14); x += 14; },
+        pad: () => { m.ground(x, x + 10).put(x + 2, 8, "J").row(x + 3, 3, 5, "=").gems(2, x + 3, x + 4, x + 5, x + 6, x + 7); x += 10; },
+        crumble: () => { m.row(x, 8, 6, "C").gems(6, x + 2, x + 4); m.ground(x + 6, x + 11); x += 11; },
+        spikes: () => { if (theme === "sky") return S_.flat(); m.ground(x, x + 8).put(x + 3, 7, "^").put(x + 4, 7, "^").gems(5, x + 3, x + 4); x += 8; },
+        flyer: () => { m.ground(x, x + 9).put(x + 5, 5, "Y"); x += 9; },
+        step: () => { m.ground(x, x + 3).ground(x + 3, x + 9, 6).ground(x + 9, x + 12).gems(4, x + 5, x + 7); x += 12; },
+        fire: () => { if (!th.lava) return S_.gap(); m.put(x + 1, 8, "F"); m.ground(x + 3, x + 8); x += 8; }
+      };
+      const pool = ["flat", "flat", "gap", "qrow", "crates", "hook", "pad", "flyer", "step", "spikes"]
+        .concat(hard > 0.3 ? ["mover", "crumble", "gap", "hook"] : [])
+        .concat(th.lava ? ["fire", "fire"] : []);
+      while (x < 112) {
+        if (sinceK > 26) { m.ground(x, x + 3).put(x + 1, 7, "K"); x += 3; sinceK = 0; continue; }
+        if (gatesLeft && x > 25 + (2 - gatesLeft) * 40) { m.ground(x, x + 6).put(x + 3, 7, "G"); x += 6; gatesLeft--; continue; }
+        const before = x; S_[pick(pool)](); sinceK += x - before;
+      }
+      m.ground(x, 132).put(Math.min(x + 6, 128), 7, "X");
+      return m;
+    };
+    return { gen: n, name: "Abenteuer " + n, sub: "Ein ganz neues Abenteuer", ico: "🎲", goal: pick(GEN_GOALS), theme,
+      intro: "Ein neues Abenteuer! Niemand weiss, was dich hier erwartet. Los geht's!", gates, build };
+  }
+
   function loadLevel(i) {
-    const def = LEVELS[i], m = def.build(), th = THEMES[def.theme], g = m.g, W = m.W;
+    const def = typeof i === "number" ? LEVELS[i] : i, m = def.build(), th = THEMES[def.theme], g = m.g, W = m.W;
+    // ?-Blöcke: der erste hat einen Pilz, bei mehr Blöcken auch Feder und Stern – wie bei Mario.
+    const qpos = []; g.forEach((r, y) => r.forEach((ch, x) => { if (ch === "Q") qpos.push([x, y]); }));
+    qpos.sort((a, b) => a[0] - b[0]);
+    if (qpos.length) { const [x, y] = qpos[0]; g[y][x] = "O"; }
+    if (qpos.length >= 4) { const [x, y] = qpos[Math.floor(qpos.length / 2)]; g[y][x] = "N"; }
+    if (qpos.length >= 3) { const [x, y] = qpos[qpos.length - 1]; g[y][x] = "V"; }
     for (let x = 0; x < W; x++) if (g[9][x] === ".") for (let y = 8; y < ROWS; y++) if (g[y][x] === ".") g[y][x] = th.pit;
     let qs = 0; g.forEach((r) => r.forEach((ch) => { if (ch === "Q" || ch === "W") qs++; }));
-    const L = { qs, i, def, th, W, g, gems: [], enemies: [], cps: [], gates: [], torches: [], movers: [], hooks: [], jumpers: [], crumble: {}, goal: null, trig: null, stop: null, t: 0, got: 0, parts: [], shake: 0, cam: 0, jumpT: -9 };
+    const L = { qs, i, def, th, W, g, gems: [], enemies: [], cps: [], gates: [], torches: [], movers: [], hooks: [], jumpers: [], items: [], crumble: {}, goal: null, trig: null, stop: null, t: 0, got: 0, parts: [], shake: 0, cam: 0, jumpT: -9 };
     const gatePos = [];
     let start = { x: 6, y: 200 };
     for (let y = 0; y < ROWS; y++) for (let x = 0; x < W; x++) {
@@ -1590,14 +1727,22 @@ mark { background: none; color: var(--berry); }
       }
     }
     gatePos.sort((a, b) => a.x - b.x).forEach((p, k) => L.gates.push({ x: p.x, y: p.y - 2 * TS, w: TS, h: 3 * TS, open: false, op: 0, asked: false, pr: def.gates[k] || def.gates[0] }));
-    L.p = { x: start.x, y: start.y, w: 18, h: 28, vx: 0, vy: 0, kx: 0, whipT: 0, whipCd: 0, swing: null, flyT: 0, onIce: false, onGround: false, coyote: 0, face: 1, walk: 0, inv: 0, squash: 0, bub: { txt: `Los geht's, ${heroOf().name}!`, t: 2.2 }, carry: null };
+    L.p = { x: start.x, y: start.y, w: 18, h: 28, vx: 0, vy: 0, kx: 0, whipT: 0, whipCd: 0, swing: null, flyT: 0, onIce: false, big: false, star: 0, feather: false, dbl: false, onGround: false, coyote: 0, face: 1, walk: 0, inv: 0, squash: 0, bub: { txt: `Los geht's, ${heroOf().name}!`, t: 2.2 }, carry: null };
     L.cp = { x: start.x, y: start.y };
     L.boulder = { on: false, done: false, x: 0, rot: 0, fall: 0, vy: 0 };
     return L;
   }
 
   const tAt = (L, tx, ty) => (tx < 0 || tx >= L.W ? "#" : ty < 0 || ty >= ROWS ? "." : L.g[ty][tx]);
-  const isFull = (ch) => ch === "#" || ch === "J" || ch === "Q" || ch === "U" || ch === "W" || ch === "I";
+  const isFull = (ch) => ch === "#" || ch === "J" || ch === "Q" || ch === "U" || ch === "W" || ch === "I" || ch === "O" || ch === "N" || ch === "V";
+  const POWER = { O: "pilz", N: "feder", V: "stern" };
+  function bumpBlock(L, tx, ty) {
+    const ch = L.g[ty][tx];
+    L.g[ty][tx] = "U"; L.bump = { tx, ty, t: L.t };
+    if (ch === "Q") { L.got++; tone(988, 0, .07, "square", .06); tone(1319, .07, .12, "square", .06); burst(L, tx * TS + 15, ty * TS - 4, "#3FD0E8", 6, "💎"); return; }
+    L.items.push({ kind: POWER[ch], x: tx * TS + 15, y: ty * TS - 14, vx: 40, vy: -160, t: 0 });
+    [523, 659, 784].forEach((f, k) => tone(f, k * .07, .12, "triangle", .1));
+  }
   const cDown = (L, tx, ty) => { const c = L.crumble[tx + "," + ty]; return !!(c && c.down > 0); };
   const isTop = (L, ch, tx, ty) => ch === "=" || ch === "B" || (ch === "C" && !cDown(L, tx, ty));
   const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -1630,13 +1775,16 @@ mark { background: none; color: var(--berry); }
         const ch = tAt(L, tx, ty);
         if (!isFull(ch)) continue;
         p.y = (ty + 1) * TS; p.vy = 0;
-        if (ch === "Q") { L.g[ty][tx] = "U"; L.bump = { tx, ty, t: L.t }; L.got++; tone(988, 0, .07, "square", .06); tone(1319, .07, .12, "square", .06); burst(L, tx * TS + 15, ty * TS - 4, "#3FD0E8", 6, "💎"); }
+        if ("QONV".includes(ch)) bumpBlock(L, tx, ty);
         else tone(140, 0, .06, "square", .05);
         return;
       }
     }
   }
-  function hurt(L, p, fromX) { p.inv = 1.2; p.kx = (p.x + p.w / 2 < fromX ? -1 : 1) * 260; p.vy = -260; p.swing = null; bubble(L, "Autsch!"); tone(180, 0, .2, "sawtooth", .07); }
+  function hurt(L, p, fromX) {
+    if (p.star > 0) return;
+    if (p.big) { p.big = false; p.inv = 1.6; p.vy = -220; bubble(L, "Puh, der Pilz hat dich beschützt!"); [523, 392, 262].forEach((f, k) => tone(f, k * .08, .12, "triangle", .1)); return; }
+    p.inv = 1.2; p.kx = (p.x + p.w / 2 < fromX ? -1 : 1) * 260; p.vy = -260; p.swing = null; bubble(L, "Autsch!"); tone(180, 0, .2, "sawtooth", .07); }
   // Peitsche: betäubt Gegner, zerschlägt Kisten, greift goldene Ringe.
   function whipNow(L, p) {
     p.whipT = 0.28; p.whipCd = 0.35;
@@ -1655,10 +1803,12 @@ mark { background: none; color: var(--berry); }
       }
     }
     const zone = { x: p.face > 0 ? cx : cx - 86, y: p.y - 8, w: 86, h: p.h + 14 };
+    zone.y -= 34; zone.h += 34; // Peitsche erwischt auch ?-Blöcke knapp über dem Kopf
     L.enemies.forEach((e) => { if (hit(zone, e)) { if (e.stun <= 0) burst(L, e.x + 12, e.y, "#FFC233", 6, "★"); e.stun = 3.5; tone(900, .02, .08, "sine", .12); } });
     for (let ty = Math.floor(zone.y / TS); ty <= Math.floor((zone.y + zone.h) / TS); ty++)
       for (let tx = Math.floor(zone.x / TS); tx <= Math.floor((zone.x + zone.w) / TS); tx++)
-        if (tAt(L, tx, ty) === "W") { L.g[ty][tx] = "."; L.got++; burst(L, tx * TS + 15, ty * TS + 15, "#B07A45", 8); burst(L, tx * TS + 15, ty * TS + 10, "#3FD0E8", 3, "💎"); tone(1320, .04, .08, "triangle", .12); }
+        if ("QONV".includes(tAt(L, tx, ty))) bumpBlock(L, tx, ty);
+        else if (tAt(L, tx, ty) === "W") { L.g[ty][tx] = "."; L.got++; burst(L, tx * TS + 15, ty * TS + 15, "#B07A45", 8); burst(L, tx * TS + 15, ty * TS + 10, "#3FD0E8", 3, "💎"); tone(1320, .04, .08, "triangle", .12); }
   }
   // Schwingen am Ring: Pendel. Loslassen mit A oder automatisch im höchsten Punkt nach vorne.
   function swingStep(L, p, dir, dt) {
@@ -1679,7 +1829,8 @@ mark { background: none; color: var(--berry); }
     return !!p.swing;
   }
   function respawn(L) {
-    L.p.swing = null;
+    if (window.__lhDeaths) window.__lhDeaths.push([Math.round(L.p.x / TS), Math.round(L.p.y), L.boulder.on ? "kugel" : ""]);
+    L.p.swing = null; L.p.big = false; L.p.feather = false; L.p.star = 0;
     const p = L.p;
     p.x = L.cp.x; p.y = L.cp.y; p.vx = p.vy = p.kx = 0; p.inv = 1; p.carry = null;
     if (L.boulder.on) { L.boulder.on = false; L.shake = 0; roarStop(); }
@@ -1713,6 +1864,30 @@ mark { background: none; color: var(--berry); }
     gIn.buf -= dt; p.coyote -= dt; p.inv -= dt; p.squash *= Math.pow(0.002, dt);
     if (p.bub) { p.bub.t -= dt; if (p.bub.t <= 0) p.bub = null; }
     if (gIn.buf > 0 && p.coyote > 0) { p.vy = -560; p.coyote = 0; gIn.buf = 0; p.carry = null; tone(520, 0, .1, "square", .04); }
+    else if (gIn.buf > 0 && p.feather && !p.dbl && !p.onGround) { p.vy = -520; p.dbl = true; gIn.buf = 0; burst(L, p.x + 9, p.y + p.h, "#FFFFFF", 6); tone(780, 0, .1, "triangle", .08); }
+    if (p.star > 0) { p.star -= dt; if (Math.floor(L.t * 4) !== Math.floor((L.t - dt) * 4)) tone([523, 659, 784, 1047][Math.floor(L.t * 4) % 4], 0, .08, "square", .03); }
+    L.items.forEach((it) => {
+      it.t += dt;
+      if (it.kind === "feder") { it.vy = Math.min(it.vy + 300 * dt, 40); it.x += Math.sin(it.t * 3) * 40 * dt; it.y += it.vy * dt; }
+      else {
+        it.vy = Math.min(it.vy + 1200 * dt, 600); it.x += it.vx * dt;
+        const fx = Math.floor((it.x + Math.sign(it.vx) * 10) / TS), fy = Math.floor(it.y / TS);
+        let floor = false; for (let yy = Math.floor((it.y + 16) / TS); yy < ROWS && !floor; yy++) { const ch2 = tAt(L, fx, yy); floor = isFull(ch2) || isTop(L, ch2, fx, yy); }
+        if (isFull(tAt(L, fx, fy)) || (it.onG && !floor)) it.vx *= -1; // dreht an Wänden und vor Abgründen um
+        it.y += it.vy * dt;
+        const by = Math.floor((it.y + 12) / TS), bx = Math.floor(it.x / TS), ch = tAt(L, bx, by);
+        it.onG = false;
+        if (it.vy > 0 && (isFull(ch) || isTop(L, ch, bx, by))) { it.y = by * TS - 12; it.vy = it.kind === "stern" ? -420 : 0; it.onG = it.kind !== "stern"; }
+      }
+      if (Math.abs(it.x - (p.x + p.w / 2)) < 22 && Math.abs(it.y - (p.y + p.h / 2)) < 26) {
+        it.got = true; chime();
+        if (it.kind === "pilz") { p.big = true; bubble(L, "Gross und stark!"); }
+        if (it.kind === "feder") { p.feather = true; bubble(L, "Doppelsprung! Zweimal A!"); }
+        if (it.kind === "stern") { p.star = 8; bubble(L, "Unbesiegbar!"); }
+        burst(L, it.x, it.y, "#FFC233", 10, "★");
+      }
+    });
+    L.items = L.items.filter((it) => !it.got && it.y < WH + 60);
     p.vy = Math.min(900, p.vy + 1500 * dt);
     if (p.carry) p.x += p.carry.dx;
     p.x += (p.vx + p.kx) * dt;
@@ -1724,7 +1899,7 @@ mark { background: none; color: var(--berry); }
     if (!p.onGround && p.vy >= 0) L.movers.forEach((m) => {
       if (p.x + p.w > m.x + 2 && p.x < m.x + m.w - 2 && prevB <= m.y + 0.5 && p.y + p.h >= m.y) { p.y = m.y - p.h; p.vy = 0; p.onGround = true; p.carry = m; }
     });
-    if (p.onGround) { p.coyote = 0.12; if (!was) p.squash = 1; }
+    if (p.onGround) { p.coyote = 0.12; p.dbl = false; if (!was) p.squash = 1; }
     if (p.onGround && Math.abs(p.vx) > 10) p.walk += dt * 14;
 
     const hz = (x, y) => { const ch = tAt(L, Math.floor(x / TS), Math.floor(y / TS)); return ch === "~" || (ch === "^" && y % TS > 14); };
@@ -1734,7 +1909,7 @@ mark { background: none; color: var(--berry); }
       // springt ~1 s hoch, dann ~2 s Pause zum Drüberspringen
       j.t += dt; const ph = (j.t % 3.2) / 3.2;
       j.y = ph < 0.34 ? j.base - Math.sin(ph / 0.34 * Math.PI) * 175 : j.base + 40;
-      if (p.inv <= 0 && Math.hypot(j.x - (p.x + p.w / 2), j.y - (p.y + p.h / 2)) < 22) { p.inv = 1.2; p.vy = Math.min(p.vy, -320); bubble(L, "Heiss!"); tone(180, 0, .2, "sawtooth", .07); }
+      if (p.inv <= 0 && p.star <= 0 && Math.hypot(j.x - (p.x + p.w / 2), j.y - (p.y + p.h / 2)) < 22) { p.inv = 1.2; p.vy = Math.min(p.vy, -320); bubble(L, "Heiss!"); tone(180, 0, .2, "sawtooth", .07); }
     });
     L.enemies.forEach((e) => {
       if (e.stun > 0) e.stun -= dt;
@@ -1747,7 +1922,8 @@ mark { background: none; color: var(--berry); }
         if (isFull(tAt(L, tx, ty)) || !isFull(tAt(L, tx, ty + 1))) e.vx *= -1; else e.x = nx;
       }
       if (hit(p, e)) {
-        if (p.vy > 0 && p.y + p.h - e.y < 14) { e.stun = 2.5; p.vy = -380; tone(700, 0, .08, "sine", .15); tone(1000, .06, .1, "sine", .12); burst(L, e.x + 12, e.y, "#FFC233", 6, "★"); }
+        if (p.star > 0 && e.stun <= 0) { e.stun = 4; burst(L, e.x + 12, e.y, "#FFC233", 8, "★"); tone(1200, 0, .08, "square", .08); }
+        else if (p.vy > 0 && p.y + p.h - e.y < 14) { e.stun = 2.5; p.vy = -380; tone(700, 0, .08, "sine", .15); tone(1000, .06, .1, "sine", .12); burst(L, e.x + 12, e.y, "#FFC233", 6, "★"); }
         else if (e.stun <= 0 && p.inv <= 0) hurt(L, p, e.x + e.w / 2);
       }
     });
@@ -1796,6 +1972,12 @@ mark { background: none; color: var(--berry); }
       } else if (th.deco === "pine") {
         c.beginPath(); c.moveTo(x + 66, WH - h - 50); c.lineTo(x + 30, WH - 10); c.lineTo(x + 102, WH - 10); c.fill();
         c.fillStyle = "#FFFFFF"; c.beginPath(); c.moveTo(x + 66, WH - h - 50); c.lineTo(x + 54, WH - h - 18); c.lineTo(x + 78, WH - h - 18); c.fill(); c.fillStyle = th.near;
+      } else if (th.deco === "fern") {
+        c.fillRect(x + 62, WH - h - 10, 8, h + 10);
+        for (let k = 0; k < 5; k++) { c.beginPath(); c.ellipse(x + 66 + (k % 2 ? 22 : -22), WH - h - 6 + k * 6, 26, 7, (k % 2 ? -1 : 1) * 0.5, 0, 7); c.fill(); }
+      } else if (th.deco === "cactus") {
+        c.fillRect(x + 60, WH - h * .7, 14, h * .7); c.fillRect(x + 44, WH - h * .55, 10, 26); c.fillRect(x + 44, WH - h * .55 + 18, 22, 8);
+        c.fillRect(x + 80, WH - h * .45, 10, 22); c.fillRect(x + 68, WH - h * .45 + 14, 22, 8);
       } else if (th.deco === "cloud") {
         c.beginPath(); c.arc(x + 40, WH - h, 22, 0, 7); c.arc(x + 66, WH - h - 10, 28, 0, 7); c.arc(x + 94, WH - h, 20, 0, 7); c.fill();
       } else { c.fillRect(x + 50, WH - 150 - r * 40, 26, 200); c.fillRect(x + 42, WH - 160 - r * 40, 42, 12); }
@@ -1809,11 +1991,12 @@ mark { background: none; color: var(--berry); }
         c.fillStyle = th.dirt; c.fillRect(X, Y, TS + .5, TS + .5);
         const r = rnd(tx * 31 + ty); c.fillStyle = th.dirt2; c.fillRect(X + 4 + r * 14, Y + 9 + r * 8, 5, 4); c.fillRect(X + 20 - r * 10, Y + 21, 4, 3);
         if (ty > 0 && !isFull(tAt(L, tx, ty - 1))) { c.fillStyle = th.top; c.fillRect(X, Y, TS + .5, 6); c.beginPath(); for (let i = 0; i < 3; i++) { c.moveTo(X + 10 + i * 10, Y + 6); c.arc(X + 5 + i * 10, Y + 6, 5, 0, Math.PI); } c.fill(); }
-      } else if (ch === "Q" || ch === "U") {
+      } else if (ch === "Q" || ch === "U" || ch === "O" || ch === "N" || ch === "V") {
         const bp = L.bump && L.bump.tx === tx && L.bump.ty === ty ? Math.max(0, 1 - (L.t - L.bump.t) * 6) * 6 : 0;
-        c.fillStyle = ch === "Q" ? "#F5B82E" : "#9C7A55"; rrect(c, X + 1, Y + 1 - bp, TS - 2, TS - 2, 4); c.fill();
-        c.fillStyle = ch === "Q" ? "#C98A12" : "#7E6040"; c.fillRect(X + 1, Y + TS - 5 - bp, TS - 2, 4);
-        if (ch === "Q") { c.fillStyle = "#fff"; c.font = "900 20px Grandstander, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("?", X + 15, Y + 15 - bp + Math.sin(L.t * 4) * 1); }
+        const q = ch !== "U";
+        c.fillStyle = q ? "#F5B82E" : "#9C7A55"; rrect(c, X + 1, Y + 1 - bp, TS - 2, TS - 2, 4); c.fill();
+        c.fillStyle = q ? "#C98A12" : "#7E6040"; c.fillRect(X + 1, Y + TS - 5 - bp, TS - 2, 4);
+        if (q) { c.fillStyle = "#fff"; c.font = "900 20px Grandstander, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("?", X + 15, Y + 15 - bp + Math.sin(L.t * 4) * 1); }
       } else if (ch === "W") {
         c.fillStyle = "#B07A45"; c.fillRect(X + 1, Y + 1, TS - 2, TS - 2);
         c.strokeStyle = "#7A4E26"; c.lineWidth = 2.5; c.strokeRect(X + 2.5, Y + 2.5, TS - 5, TS - 5);
@@ -1822,10 +2005,12 @@ mark { background: none; color: var(--berry); }
         c.fillStyle = th.dirt; c.fillRect(X, Y, TS + .5, TS + .5);
         c.fillStyle = "#CFEFFF"; c.fillRect(X, Y, TS + .5, 9); c.fillStyle = "rgba(255,255,255,.85)"; c.fillRect(X + 4, Y + 2, 10, 2);
       } else if (ch === "J") {
+        // Sprung-Pilz im Boden: drüberlaufen = hochspringen
         const sq = L.t - L.jumpT < .2 ? 4 : 0;
-        c.fillStyle = "#F4E9D8"; c.fillRect(X + 10, Y + 14, 10, 16);
-        c.fillStyle = "#E5484D"; c.beginPath(); c.ellipse(X + 15, Y + 16 + sq, 16, 13 - sq, 0, Math.PI, 0); c.fill();
-        c.fillStyle = "#fff"; [[8, 10], [15, 6], [22, 10]].forEach(([a, b]) => { c.beginPath(); c.arc(X + a, Y + b + sq, 2.5, 0, 7); c.fill(); });
+        c.fillStyle = th.dirt; c.fillRect(X, Y, TS + .5, TS + .5);
+        c.fillStyle = "#F4E9D8"; c.fillRect(X + 10, Y - 2, 10, 10);
+        c.fillStyle = "#E5484D"; c.beginPath(); c.ellipse(X + 15, Y + 2 + sq, 17, 13 - sq, 0, Math.PI, 0); c.fill();
+        c.fillStyle = "#fff"; [[7, -4], [15, -8], [23, -4]].forEach(([a, b]) => { c.beginPath(); c.arc(X + a, Y + b + sq, 2.5, 0, 7); c.fill(); });
       } else if (ch === "=" && th.cloud) {
         c.fillStyle = "#FFFFFF"; c.beginPath(); c.arc(X + 8, Y + 6, 9, 0, 7); c.arc(X + 20, Y + 3, 11, 0, 7); c.arc(X + 30, Y + 7, 8, 0, 7); c.fill();
         c.fillStyle = "#DCE6F6"; c.fillRect(X, Y + 9, TS + .5, 4);
@@ -1860,7 +2045,10 @@ mark { background: none; color: var(--berry); }
   function drawPlayer(c, p, t) {
     if (p.inv > 0 && Math.floor(t * 12) % 2) return;
     const s = p.squash, run = p.onGround && Math.abs(p.vx) > 10 ? Math.sin(p.walk) : (p.onGround ? 0 : 0.7);
-    c.save(); c.translate(p.x + p.w / 2, p.y + p.h); c.scale(p.face * (1 + s * .15), 1 - s * .15);
+    if (p.star > 0) { c.fillStyle = `hsla(${(t * 400) % 360}, 90%, 60%, .45)`; c.beginPath(); c.arc(p.x + p.w / 2, p.y + p.h / 2 - 6, 28, 0, 7); c.fill(); }
+    const big = p.big ? 1.3 : 1;
+    c.save(); c.translate(p.x + p.w / 2, p.y + p.h); c.scale(p.face * (1 + s * .15) * big, (1 - s * .15) * big);
+    if (p.feather) { c.save(); c.translate(-9, -20); c.rotate(-0.6 + Math.sin(t * 10) * (p.onGround ? .1 : .5)); emoji(c, "🪶", 0, 0, 13); c.restore(); }
     drawHero(c, S.hero || "matteo", run, t);
     c.restore();
   }
@@ -1972,6 +2160,7 @@ mark { background: none; color: var(--berry); }
       c.strokeStyle = "#F5B82E"; c.lineWidth = 4; c.beginPath(); c.arc(h.x, h.y, 7, 0, 7); c.stroke();
     });
     L.jumpers.forEach((j) => { if (j.y < j.base - 6) emoji(c, "🔥", j.x, j.y, 26); });
+    L.items.forEach((it) => emoji(c, { pilz: "🍄", feder: "🪶", stern: "⭐" }[it.kind], it.x, it.y, it.kind === "stern" ? 26 + Math.sin(L.t * 12) * 3 : 24));
     L.enemies.forEach((e) => {
       c.save(); c.translate(e.x + e.w / 2, e.y + e.h / 2);
       if (e.vx > 0) c.scale(-1, 1);
@@ -1988,11 +2177,14 @@ mark { background: none; color: var(--berry); }
     }
     const B = L.boulder;
     if (B.on) {
+      if (L.def.chaser) { c.save(); c.translate(B.x, 190 + B.fall); c.scale(-1, 1); emoji(c, L.def.chaser, 0, Math.abs(Math.sin(L.t * 9)) * -8, 96); c.restore(); }
+      else {
       c.save(); c.translate(B.x, 200 + B.fall); c.rotate(B.rot);
       c.fillStyle = "#8A8178"; c.beginPath(); c.arc(0, 0, 40, 0, 7); c.fill();
       c.strokeStyle = "#5E574F"; c.lineWidth = 3; c.beginPath(); c.moveTo(-20, -10); c.lineTo(0, 5); c.lineTo(12, -18); c.moveTo(5, 20); c.lineTo(22, 12); c.stroke();
       c.fillStyle = "#A39A90"; c.beginPath(); c.arc(-14, -18, 7, 0, 7); c.fill();
       c.restore();
+      }
     }
     // Peitsche bzw. Seil zum Ring
     if (p.swing || p.whipT > 0) {
@@ -2065,12 +2257,17 @@ mark { background: none; color: var(--berry); }
   }
   function winLevel(L) {
     stopGame();
-    const i = L.i, first = !S.game.done.includes(i), last = i === LEVELS.length - 1 || i === 5;
-    if (first) { S.game.done.push(i); addPride(`Expedition geschafft: ${L.def.name}`, true); }
+    const i = L.i, gen = L.def.gen, last = !!L.def.win;
+    const frac = (L.got) / Math.max(1, L.gems.length + L.qs);
+    if (gen) { S.game.gen = Math.max(S.game.gen || 0, gen); }
+    else {
+      if (!S.game.done.includes(i)) { S.game.done.push(i); addPride(`Expedition geschafft: ${L.def.name}`, true); }
+      S.game.best = S.game.best || {}; S.game.best[i] = Math.max(S.game.best[i] || 0, frac);
+    }
     S.stats.levels++;
     const got = award("game", 3, 9); save();
     ovNext = () => go("map");
-    celebrate(i === LEVELS.length - 1 ? "Du hast die goldene Krone gefunden!" : i === 5 ? "Du hast den goldenen Löwen gefunden!" : `${L.def.goal} Gefunden!`, got ? `+${got} ★` : "",
+    celebrate(L.def.win || (gen ? "Abenteuer geschafft!" : `${L.def.goal} Gefunden!`), got ? `+${got} ★` : "",
       `${L.got} von ${L.gems.length + L.qs} Edelsteinen. ` + (last ? `${heroOf().name}, du bist ein echtes Löwenherz!` : `${heroOf().name}, du warst richtig mutig!`));
   }
   function renderMap() {
@@ -2078,11 +2275,17 @@ mark { background: none; color: var(--berry); }
     $("expMap").innerHTML = LEVELS.map((l, i) => {
       const open = i === 0 || done.includes(i - 1), ok = done.includes(i), w = l.world || 0;
       const head = (i === 0 || (LEVELS[i - 1].world || 0) !== w) ? `<div class="worldhead"><span>${WORLDS[w].ico}</span> Welt ${w + 1}: ${WORLDS[w].name}</div>` : '<div class="path"></div>';
-      return head + `<button class="stop" data-lv="${i}"${open ? "" : " disabled"}><span class="ico">${open ? l.ico : "🔒"}</span><span><b>${i + 1}. ${l.name}</b><small>${l.sub}</small></span><span class="st">${ok ? "⭐" : open ? "▶️" : ""}</span></button>`;
-    }).join("");
+      return head + `<button class="stop" data-lv="${i}"${open ? "" : " disabled"}><span class="ico">${open ? l.ico : "🔒"}</span><span><b>${i + 1}. ${l.name}</b><small>${l.sub}</small></span><span class="st">${ok ? gemStars(i) : open ? "▶️" : ""}</span></button>`;
+    }).join("") + `<div class="worldhead"><span>🎲</span> Endlos-Abenteuer</div>
+      <button class="stop" data-gen="${(S.game.gen || 0) + 1}"><span class="ico">🎲</span><span><b>Abenteuer ${(S.game.gen || 0) + 1}</b><small>Jedes Mal ein neues Level · schon ${S.game.gen || 0} geschafft</small></span><span class="st">▶️</span></button>`;
   }
-  enter.map = () => { renderHeroPick(); renderMap(); speak("Die grosse Expedition! Wer spielt heute, Matteo oder Elara? Vier Welten warten auf dich!"); };
-  $("expMap").addEventListener("click", (e) => { const b = e.target.closest("[data-lv]"); if (!b || b.disabled) return; pop(); GL = loadLevel(+b.dataset.lv); go("game"); });
+  // 1-3 Sterne je nach gesammelten Edelsteinen – Grund, ein Level nochmal zu spielen
+  function gemStars(i) { const f = (S.game.best || {})[i] || 0; const n = f >= 0.99 ? 3 : f >= 0.6 ? 2 : 1; return "⭐".repeat(n) + "☆".repeat(3 - n); }
+  enter.map = () => { renderHeroPick(); renderMap(); speak("Die grosse Expedition! Wer spielt heute, Matteo oder Elara? Sechs Welten und unendlich viele Abenteuer warten auf dich!"); };
+  $("expMap").addEventListener("click", (e) => {
+    const g = e.target.closest("[data-gen]"); if (g) { pop(); GL = loadLevel(genDef(+g.dataset.gen)); go("game"); return; }
+    const b = e.target.closest("[data-lv]"); if (!b || b.disabled) return; pop(); GL = loadLevel(+b.dataset.lv); go("game");
+  });
   enter.game = () => {
     if (!GL) return go("map");
     sizeGame();
@@ -2140,7 +2343,10 @@ mark { background: none; color: var(--berry); }
     AGAIN.concat(PRAISE).forEach((t) => add(t));
     Object.values(PAIRS).forEach((ps) => ps.forEach((pr) => pr.forEach(([w, a]) => add(`Wo ist ${a} ${w}?`, `${a} ${w}!`))));
     EX.forEach(([, t]) => add(t));
-    LEVELS.forEach((l) => { add(l.name, l.intro); l.gates.forEach((g) => add(g.text, g.speak)); });
+    LEVELS.forEach((l) => { add(l.name, l.intro, l.win); l.gates.forEach((g) => add(g.text, g.speak)); });
+    GEN_GUARD.forEach((t) => add(t));
+    SND.forEach((x) => [x.start, x.mid, x.end].forEach((arr) => arr.forEach(([w]) => add(`Sag ganz deutlich: ${w}!`, `${w}!`))));
+    AFFIRM.forEach((a) => add("Halte den Mut-Knopf und ruf: " + a));
     add($("poseText").textContent);
     return Array.from(out).map((t) => ({ t, h: sayHash(t) }));
   }
@@ -2191,7 +2397,18 @@ mark { background: none; color: var(--berry); }
   function tryGate() { if (+$("gateInput").value === gateAns) go("parent"); else { $("gateMsg").hidden = false; $("gateInput").select(); } }
   $("gateOk").addEventListener("click", tryGate);
   $("gateInput").addEventListener("keydown", (e) => { if (e.key === "Enter") tryGate(); });
+  function renderFocus() {
+    const f = S.focus && S.focus.length ? S.focus : ["K", "T", "S", "SCH"];
+    $("focusRow").innerHTML = ["K", "T", "S", "SCH"].map((x) => `<button class="speakbtn" data-focus="${x}" aria-pressed="${f.includes(x)}" style="${f.includes(x) ? "background:var(--plum);color:#fff" : ""}">${f.includes(x) ? "✓ " : ""}${x}</button>`).join("");
+  }
+  $("focusRow").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-focus]"); if (!b) return;
+    let f = S.focus && S.focus.length ? S.focus.slice() : ["K", "T", "S", "SCH"];
+    f = f.includes(b.dataset.focus) ? f.filter((x) => x !== b.dataset.focus) : f.concat(b.dataset.focus);
+    S.focus = f.length ? f : ["K", "T", "S", "SCH"]; save(); renderFocus();
+  });
   enter.parent = () => {
+    renderFocus();
     $("nameInput").value = S.name;
     $("resetYes").hidden = true;
     $("stats").innerHTML = [["★", S.stars, "Sterne"], ["🗺️", S.stats.missions, "Missionen"], ["🦁", S.stats.roars, "Brüller"], ["🎲", S.stats.talks, "Gespräche"], ["⚡", S.stats.power, "Kraft-Übungen"], ["🫙", S.pride.length, "Stolz-Murmeln"], ["🧭", S.game.done.length, "Expeditions-Level"], ["🗣️", S.stats.words, "Wörter geübt"], ["👂", S.stats.ears, "Ohren-Runden"], ["👅", S.stats.tongue, "Zungen-Turnen"]]
@@ -2215,7 +2432,17 @@ mark { background: none; color: var(--berry); }
   window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEv = e; $("installBtn").hidden = false; });
   $("installBtn").addEventListener("click", async () => { if (!installEv) return; installEv.prompt(); try { await installEv.userChoice; } catch (e) {} installEv = null; $("installBtn").hidden = true; });
   if ("serviceWorker" in navigator && location.protocol !== "file:" && !window.Capacitor) {
-    navigator.serviceWorker.register("sw.js").then(() => navigator.serviceWorker.ready).then(() => {
+    const hadSW = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadSW) return;
+      if (current === "game") window.__lhReload = true; else location.reload();
+    });
+    navigator.serviceWorker.register("sw.js").then((reg) => {
+      const check = () => { try { reg.update(); } catch (e) {} };
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) check(); });
+      setInterval(check, 20 * 60 * 1000);
+      return navigator.serviceWorker.ready;
+    }).then(() => {
       $("offlineState").textContent = "✅ Offline bereit: Die App läuft jetzt auch ohne Internet.";
     }).catch(() => {});
   }
