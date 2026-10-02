@@ -1,0 +1,6 @@
+{
+  "appId": "ch.familie.loewenherz",
+  "appName": "Löwenherz",
+  "webDir": "www",
+  "android": { "backgroundColor": "#E6F3FA" }
+}

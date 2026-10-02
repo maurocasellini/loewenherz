@@ -1,0 +1,1933 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Löwenherz</title>
+<meta name="description" content="Spielerisch Selbstvertrauen und Sprechen üben – für mutige Kinder.">
+<meta name="theme-color" content="#FFC233">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Löwenherz">
+<style>
+@font-face { font-family: "Grandstander"; src: url(fonts/grandstander.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Nunito"; src: url(fonts/nunito.woff2) format("woff2"); font-weight: 200 1000; font-display: swap; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; overscroll-behavior-y: none; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<style>
+/* Layout: eine Bildschirm-App, Savanne bei Tag (hell) / Savanne bei Nacht (dunkel).
+   Oben: Sterne + Ton + Zurück. Mitte: der Löwe als Held. Unten: grosse Bild-Kacheln. */
+:root {
+  --bg: #E6F3FA;
+  --bg2: #F6FBEF;
+  --card: #FFFFFF;
+  --ink: #1C2944;
+  --muted: #56658A;
+  --sun: #FFC233;
+  --leaf: #2E9E5F;
+  --berry: #E04C74;
+  --sea: #2C76D2;
+  --plum: #7A4FC9;
+  --lion: #F3AA3C;
+  --lion-dark: #D98A1F;
+  --mane: #B9561A;
+  --cheek: #F58FA3;
+  --line: rgba(28, 41, 68, .12);
+  --shadow: 0 6px 0 rgba(28, 41, 68, .14);
+  --f-display: "Grandstander", "Comic Sans MS", "Chalkboard SE", system-ui, sans-serif;
+  --f-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --r: 26px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101830; --bg2: #18233F; --card: #1D2847; --ink: #EEF2FF; --muted: #A9B4D3;
+    --sun: #FFD15C; --leaf: #56CB8A; --berry: #FF7398; --sea: #73A9FF; --plum: #B192FF;
+    --line: rgba(238, 242, 255, .14); --shadow: 0 6px 0 rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101830; --bg2: #18233F; --card: #1D2847; --ink: #EEF2FF; --muted: #A9B4D3;
+  --sun: #FFD15C; --leaf: #56CB8A; --berry: #FF7398; --sea: #73A9FF; --plum: #B192FF;
+  --line: rgba(238, 242, 255, .14); --shadow: 0 6px 0 rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body {
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%) fixed, var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 18px;
+  -webkit-tap-highlight-color: transparent;
+}
+.app { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 12px 40px; display: flex; flex-direction: column; gap: 18px; }
+
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+button:focus-visible, input:focus-visible { outline: 4px solid var(--sea); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; line-height: 1.05; }
+
+/* Kopfzeile */
+.top { display: flex; align-items: center; gap: 10px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; padding-block: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border-radius: 999px; padding: 8px 16px; box-shadow: var(--shadow); font-family: var(--f-display); font-weight: 800; font-size: 22px; font-variant-numeric: tabular-nums; }
+.pill .star { color: var(--sun); font-size: 26px; line-height: 1; }
+.iconbtn { width: 52px; height: 52px; border-radius: 50%; background: var(--card); box-shadow: var(--shadow); font-size: 24px; display: grid; place-items: center; flex: none; }
+.iconbtn:active, .tile:active, .big:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(28,41,68,.14); }
+.spacer { flex: 1; }
+
+/* Held */
+.hero { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.hero h1 { font-size: clamp(30px, 8vw, 46px); font-weight: 900; }
+.hero .stage { font-family: var(--f-display); font-weight: 800; color: var(--mane); font-size: 20px; letter-spacing: .02em; }
+.lionwrap { width: min(240px, 62vw); aspect-ratio: 1; max-width: 100%; position: relative; }
+.lionwrap svg { width: 100%; height: 100%; overflow: visible; }
+.bob { animation: bob 3.2s ease-in-out infinite; transform-origin: 50% 80%; }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-6px) rotate(1.5deg); } }
+.progress { width: min(340px, 100%); height: 18px; background: var(--card); border-radius: 999px; overflow: hidden; box-shadow: inset 0 0 0 2px var(--line); }
+.progress > i { display: block; height: 100%; background: linear-gradient(90deg, var(--sun), var(--lion-dark)); border-radius: 999px; transition: width .6s cubic-bezier(.3,1.4,.5,1); }
+.small { font-size: 15px; color: var(--muted); font-weight: 700; }
+
+/* Löwe – Farben */
+.l-mane { fill: var(--mane); }
+.l-face { fill: var(--lion); }
+.l-ear-in { fill: var(--cheek); }
+.l-muzzle { fill: #FFE3B8; }
+.l-dark { fill: #2A1A10; }
+.l-white { fill: #FFFFFF; }
+.l-cheek { fill: var(--cheek); opacity: .7; }
+.l-crown { fill: var(--sun); stroke: var(--lion-dark); stroke-width: 3; }
+.l-stroke { fill: none; stroke: #2A1A10; stroke-width: 4; stroke-linecap: round; }
+.l-tongue { fill: #E9566F; }
+
+/* Kacheln */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.tile { --c: var(--sea); background: color-mix(in srgb, var(--c) 16%, var(--card)); border-radius: var(--r); padding: 16px 12px 14px; display: grid; justify-items: center; gap: 4px; box-shadow: 0 6px 0 color-mix(in srgb, var(--c) 45%, transparent); text-align: center; min-height: 138px; align-content: center; }
+.tile .ico { font-size: 52px; line-height: 1; }
+.tile b { font-family: var(--f-display); font-size: 22px; font-weight: 800; color: color-mix(in srgb, var(--c) 70%, var(--ink)); }
+.tile span { font-size: 14px; color: var(--muted); font-weight: 700; }
+.tile.wide { grid-column: 1 / -1; grid-template-columns: auto 1fr; justify-items: start; text-align: left; min-height: 0; padding: 18px 20px; column-gap: 16px; }
+.tile.wide .ico { grid-row: span 2; font-size: 58px; }
+
+/* Bildschirme */
+.screen { display: flex; flex-direction: column; gap: 18px; align-items: stretch; }
+.screen > h2 { font-size: clamp(28px, 7vw, 40px); font-weight: 900; text-align: center; }
+.card { background: var(--card); border-radius: var(--r); padding: 22px; box-shadow: var(--shadow); }
+.center { text-align: center; }
+.big { --c: var(--leaf); background: var(--c); color: #fff; font-family: var(--f-display); font-weight: 800; font-size: 24px; border-radius: 999px; padding: 16px 28px; box-shadow: 0 6px 0 color-mix(in srgb, var(--c) 60%, #000); display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 64px; }
+.big.alt { --c: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+.row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.say { font-family: var(--f-display); font-weight: 900; font-size: clamp(30px, 8.5vw, 50px); line-height: 1.1; text-align: center; text-wrap: balance; }
+.mission-ico { font-size: 84px; text-align: center; line-height: 1; }
+.cat { display: inline-block; font-weight: 800; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.speakbtn { font-size: 15px; font-weight: 800; color: var(--sea); display: inline-flex; gap: 6px; align-items: center; padding: 8px 12px; border-radius: 999px; background: color-mix(in srgb, var(--sea) 12%, transparent); }
+
+/* Brüll-Knopf */
+.roarbtn { width: min(260px, 70vw); aspect-ratio: 1; max-width: 100%; border-radius: 50%; margin: 0 auto; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--sun) 70%, #fff), var(--lion-dark)); box-shadow: 0 10px 0 var(--mane), 0 0 0 10px color-mix(in srgb, var(--sun) 30%, transparent); display: grid; place-items: center; font-family: var(--f-display); font-weight: 900; color: #4A2408; font-size: 30px; touch-action: none; user-select: none; -webkit-user-select: none; position: relative; overflow: hidden; }
+.roarbtn .fill { position: absolute; inset: auto 0 0 0; height: 0%; background: rgba(224, 76, 116, .45); transition: height .08s linear; }
+.roarbtn .lbl { position: relative; display: grid; gap: 4px; justify-items: center; }
+.roarbtn .lbl em { font-style: normal; font-size: 64px; line-height: 1; }
+.roarbtn.held { transform: scale(1.06); }
+.shake { animation: shake .35s linear infinite; }
+@keyframes shake { 0%,100% { transform: translate(0,0) scale(1.06); } 25% { transform: translate(-3px,2px) scale(1.07); } 75% { transform: translate(3px,-2px) scale(1.07); } }
+
+/* Gefühle */
+.feelings { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+.feel { --c: var(--sun); background: color-mix(in srgb, var(--c) 20%, var(--card)); border-radius: 22px; padding: 14px 8px; display: grid; justify-items: center; gap: 2px; box-shadow: 0 5px 0 color-mix(in srgb, var(--c) 45%, transparent); }
+.feel .ico { font-size: 48px; line-height: 1.1; }
+.feel b { font-family: var(--f-display); font-size: 19px; }
+.tip { border-left: 6px solid var(--sea); padding: 6px 0 6px 14px; color: var(--muted); font-weight: 700; font-size: 16px; }
+
+/* Würfel */
+.die { width: 140px; height: 140px; margin: 0 auto; border-radius: 30px; background: var(--card); box-shadow: 0 8px 0 var(--line), inset 0 0 0 4px var(--line); font-size: 76px; display: grid; place-items: center; }
+.rolling { animation: roll .7s cubic-bezier(.3,.7,.4,1); }
+@keyframes roll { 0% { transform: rotate(0) scale(1); } 40% { transform: rotate(200deg) scale(.8); } 100% { transform: rotate(360deg) scale(1); } }
+.seg { display: inline-flex; background: var(--card); border-radius: 999px; padding: 5px; box-shadow: var(--shadow); gap: 4px; }
+.seg button { padding: 10px 16px; border-radius: 999px; font-weight: 800; font-size: 16px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--plum); color: #fff; }
+
+/* Atmen */
+.breath { width: 220px; height: 220px; max-width: 100%; margin: 10px auto; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle, color-mix(in srgb, var(--sea) 35%, var(--card)), color-mix(in srgb, var(--sea) 10%, var(--card))); transform: scale(.6); transition: transform 4s ease-in-out; font-size: 64px; box-shadow: 0 0 0 12px color-mix(in srgb, var(--sea) 14%, transparent); }
+.breath.in { transform: scale(1); }
+.count { font-family: var(--f-display); font-weight: 900; font-size: 72px; text-align: center; font-variant-numeric: tabular-nums; line-height: 1; }
+
+/* Stolz-Glas */
+.jar { position: relative; width: min(300px, 80vw); max-width: 100%; height: 330px; margin: 0 auto; }
+.jar .lid { position: absolute; left: 14%; right: 14%; top: 0; height: 34px; border-radius: 12px; background: var(--berry); box-shadow: 0 5px 0 color-mix(in srgb, var(--berry) 60%, #000); z-index: 2; }
+.jar .glass { position: absolute; inset: 26px 0 0 0; border-radius: 40px 40px 70px 70px; background: color-mix(in srgb, var(--sea) 10%, transparent); border: 5px solid color-mix(in srgb, var(--sea) 40%, transparent); display: flex; flex-wrap: wrap-reverse; align-content: flex-start; justify-content: center; gap: 6px; padding: 18px 16px 22px; overflow: hidden; }
+.marble { width: 38px; height: 38px; border-radius: 50%; flex: none; box-shadow: inset -5px -6px 0 rgba(0,0,0,.18), inset 5px 5px 0 rgba(255,255,255,.45); }
+.marble.new { animation: drop .7s cubic-bezier(.3,1.5,.5,1); }
+@keyframes drop { from { transform: translateY(-240px); } to { transform: translateY(0); } }
+.jar .shine { position: absolute; left: 22px; top: 60px; width: 14px; height: 120px; border-radius: 10px; background: rgba(255,255,255,.4); z-index: 1; pointer-events: none; }
+.list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.list li { background: var(--card); border-radius: 18px; padding: 12px 16px; box-shadow: var(--shadow); display: flex; gap: 12px; align-items: center; }
+.list li .dot { width: 22px; height: 22px; border-radius: 50%; flex: none; }
+.list li div { min-width: 0; }
+.list li small { display: block; color: var(--muted); font-weight: 700; font-size: 13px; }
+
+/* Formulare */
+label.f { display: grid; gap: 6px; font-weight: 800; font-size: 16px; }
+input[type=text], input[type=number] { font: inherit; font-size: 20px; padding: 14px 16px; border-radius: 16px; border: 3px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; box-sizing: border-box; }
+.formrow { display: flex; gap: 10px; flex-wrap: wrap; }
+.formrow input { flex: 1 1 180px; min-width: 0; }
+
+/* Eltern */
+.parent h3 { font-size: 22px; margin-bottom: 10px; }
+.tips { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.tips li { display: grid; gap: 2px; padding-bottom: 12px; border-bottom: 2px dashed var(--line); }
+.tips li:last-child { border-bottom: 0; padding-bottom: 0; }
+.tips b { font-size: 17px; }
+.tips span { color: var(--muted); font-size: 16px; line-height: 1.45; }
+.week { display: flex; gap: 8px; flex-wrap: wrap; }
+.week div { display: grid; justify-items: center; font-size: 13px; font-weight: 800; color: var(--muted); background: var(--bg); border-radius: 14px; padding: 6px 8px; min-width: 44px; }
+.week div i { font-style: normal; font-size: 26px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.stats div { background: var(--bg); border-radius: 16px; padding: 12px; text-align: center; }
+.stats b { display: block; font-family: var(--f-display); font-size: 32px; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 14px; font-weight: 700; color: var(--muted); }
+
+/* Feier */
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; width: 100%; height: 100%; }
+.overlay { position: fixed; inset: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 16px; }
+.overlay .card { max-width: 440px; width: 100%; display: grid; gap: 14px; justify-items: center; text-align: center; box-sizing: border-box; }
+.overlay .card h2 { font-size: 36px; }
+.plus { font-family: var(--f-display); font-weight: 900; font-size: 44px; color: var(--lion-dark); }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 12px 22px; border-radius: 999px; font-weight: 800; z-index: 60; box-shadow: var(--shadow); max-width: calc(100% - 32px); text-align: center; }
+
+/* Sprech-Dschungel */
+.world { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.world h2 { font-size: 26px; font-weight: 900; }
+.world .small { margin-left: auto; }
+.sounds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.snd { --c: var(--leaf); background: color-mix(in srgb, var(--c) 16%, var(--card)); border-radius: var(--r); padding: 16px 10px; display: grid; justify-items: center; gap: 2px; box-shadow: 0 6px 0 color-mix(in srgb, var(--c) 45%, transparent); }
+.snd .letter { font-family: var(--f-display); font-weight: 900; font-size: 54px; line-height: 1; color: color-mix(in srgb, var(--c) 75%, var(--ink)); }
+.snd .ico { font-size: 40px; line-height: 1.1; }
+.snd span { font-size: 14px; font-weight: 700; color: var(--muted); }
+.snd .dots { display: flex; gap: 4px; margin-top: 4px; }
+.snd .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.snd .dots i.on { background: var(--c); }
+.steps { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.steps button { min-width: 48px; padding: 8px 12px; border-radius: 999px; background: var(--card); box-shadow: var(--shadow); font-weight: 800; font-size: 15px; color: var(--muted); }
+.steps button.done { background: color-mix(in srgb, var(--leaf) 25%, var(--card)); color: var(--ink); }
+.steps button[aria-current="true"] { background: var(--plum); color: #fff; }
+.word { font-family: var(--f-display); font-weight: 900; font-size: clamp(40px, 12vw, 68px); text-align: center; line-height: 1.05; text-wrap: balance; }
+.word.sent { font-size: clamp(26px, 7vw, 38px); }
+mark { background: none; color: var(--berry); }
+.word mark { background: none; color: var(--berry); text-decoration: underline wavy color-mix(in srgb, var(--berry) 60%, transparent); text-underline-offset: 8px; text-decoration-thickness: 3px; }
+.pic { font-size: 110px; line-height: 1; text-align: center; }
+.mouthtip { display: flex; gap: 12px; align-items: flex-start; background: color-mix(in srgb, var(--sun) 18%, var(--card)); border-radius: 18px; padding: 12px 14px; font-weight: 700; font-size: 16px; line-height: 1.4; }
+.mouthtip > span:first-child { font-size: 30px; line-height: 1; }
+.itemdots { display: flex; gap: 6px; justify-content: center; }
+.itemdots i { width: 14px; height: 14px; border-radius: 50%; background: var(--line); }
+.itemdots i.on { background: var(--leaf); }
+.rec { --c: var(--berry); }
+.rec.on { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--berry) 30%, transparent); } }
+.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.choice { background: var(--card); border-radius: var(--r); padding: 18px 8px 14px; box-shadow: var(--shadow); display: grid; justify-items: center; gap: 6px; }
+.choice .pic { font-size: clamp(70px, 22vw, 110px); }
+.choice b { font-family: var(--f-display); font-size: 24px; }
+.choice.right { background: color-mix(in srgb, var(--leaf) 30%, var(--card)); }
+.choice.wrong { animation: nope .4s; background: color-mix(in srgb, var(--berry) 18%, var(--card)); }
+@keyframes nope { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.mirror { width: 100%; max-width: 360px; aspect-ratio: 3 / 4; border-radius: var(--r); object-fit: cover; transform: scaleX(-1); background: var(--line); margin: 0 auto; display: block; }
+.exbig { font-size: 100px; line-height: 1; text-align: center; }
+
+
+/* Zungen-Löwe: macht die Übungen vor */
+.tl { width: min(300px, 78vw); aspect-ratio: 1; max-width: 100%; margin: 0 auto; }
+.tl svg { width: 100%; height: 100%; overflow: visible; }
+.tl .mo, .tl .tg, .tl .kiss, .tl .wide, .tl .puff, .tl .air, .tl .candle, .tl .fx, .tl .tight { display: none; }
+.tl .eye { transform-box: fill-box; transform-origin: center; animation: blink 4s infinite; }
+@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+.tl .tg { transform-origin: 100px 142px; }
+.tl .mo { transform-origin: 100px 146px; }
+.tl.open .smile { display: none; }
+.tl.open .mo, .tl.open .tg { display: inline; }
+.tl.up .tg { animation: tUp 2s ease-in-out infinite; }
+@keyframes tUp { 0%, 100% { transform: rotate(180deg) scaleY(.3); } 40%, 75% { transform: rotate(180deg) scaleY(1.05); } }
+.tl.down .tg { animation: tDown 2s ease-in-out infinite; }
+@keyframes tDown { 0%, 100% { transform: scaleY(.5); } 40%, 75% { transform: scaleY(1.75); } }
+.tl.clock .tg { animation: tClock 1.6s ease-in-out infinite; }
+@keyframes tClock { 0%, 100% { transform: rotate(-80deg); } 50% { transform: rotate(80deg); } }
+.tl.lick .tg { animation: tLick 2.4s linear infinite; }
+@keyframes tLick { from { transform: rotate(0deg) scaleY(.85); } to { transform: rotate(360deg) scaleY(.85); } }
+.tl.puffing .smile { display: none; }
+.tl.puffing .tight, .tl.puffing .puff { display: inline; }
+.tl .puff { transform-box: fill-box; transform-origin: center; }
+.tl.puffing .puff { animation: tPuff 2.4s ease-in-out infinite; }
+@keyframes tPuff { 0%, 100% { transform: scale(.25); } 35%, 80% { transform: scale(1); } }
+.tl.kisswide .smile { display: none; }
+.tl.kisswide .kiss, .tl.kisswide .wide { display: inline; }
+.tl.kisswide .kiss { animation: showA 2s steps(1) infinite; }
+.tl.kisswide .wide { animation: showB 2s steps(1) infinite; }
+@keyframes showA { 0% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes showB { 0% { opacity: 0; } 50% { opacity: 1; } }
+.tl.click .tg { animation: tClick .6s ease-in-out infinite; }
+@keyframes tClick { 0%, 100% { transform: rotate(180deg) scaleY(.2); } 50% { transform: rotate(180deg) scaleY(.7); } }
+.tl.click .fx-klapp, .tl.yawn .fx-haa { display: inline; }
+.tl .fx { transform-box: fill-box; transform-origin: center; }
+.tl.click .fx-klapp { animation: fxPop .6s ease-in-out infinite; }
+@keyframes fxPop { 0%, 100% { transform: scale(.7); opacity: .4; } 50% { transform: scale(1.1); opacity: 1; } }
+.tl.cat .tg { animation: tCat 1.6s ease-in-out infinite; }
+@keyframes tCat { 0%, 100% { transform: scale(1.6, 1.3); } 50% { transform: scale(.5, 1.55); } }
+.tl.blow .smile { display: none; }
+.tl.blow .kiss, .tl.blow .air, .tl.blow .candle { display: inline; }
+.tl .air path { animation: air 1.2s linear infinite; }
+.tl .air path:nth-child(2) { animation-delay: .4s; }
+.tl .air path:nth-child(3) { animation-delay: .8s; }
+@keyframes air { from { transform: translateX(0); opacity: 1; } to { transform: translateX(34px); opacity: 0; } }
+.tl .flame { transform-box: fill-box; transform-origin: 50% 100%; animation: flame 3s ease-in infinite; }
+@keyframes flame { 0% { transform: scale(1) rotate(0); } 30% { transform: scale(1, 1.1) rotate(18deg); } 60% { transform: scale(.7) rotate(30deg); } 75%, 100% { transform: scale(0); } }
+.tl.yawn .mo { animation: tYawn 3s ease-in-out infinite; }
+.tl.yawn .tg { animation: tYawnT 3s ease-in-out infinite; }
+@keyframes tYawn { 0%, 100% { transform: scale(1); } 40%, 75% { transform: scale(2, 2.3); } }
+@keyframes tYawnT { 0%, 100% { transform: scale(1); } 40%, 75% { transform: translateY(10px) scale(1.4); } }
+.tl.yawn .fx-haa { animation: fxPop 1.5s ease-in-out infinite; }
+
+/* Dschungel-Expedition */
+.expmap { background: color-mix(in srgb, var(--sun) 20%, var(--card)); border-radius: var(--r); padding: 16px; display: grid; box-shadow: var(--shadow); border: 3px dashed color-mix(in srgb, var(--mane) 35%, transparent); }
+.stop { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 10px; border-radius: 20px; text-align: left; }
+.stop:nth-of-type(even) { margin-left: 28px; }
+.stop .ico { width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; font-size: 34px; background: var(--card); box-shadow: 0 4px 0 var(--line); }
+.stop b { font-family: var(--f-display); font-size: 21px; display: block; line-height: 1.1; }
+.stop small { display: block; color: var(--muted); font-weight: 700; font-size: 14px; }
+.stop .st { font-size: 26px; }
+.stop:disabled { opacity: .5; cursor: default; }
+.stop:not(:disabled):active { transform: translateY(3px); }
+.path { height: 16px; margin-left: 40px; border-left: 4px dotted color-mix(in srgb, var(--mane) 55%, transparent); }
+.heropick { display: flex; gap: 14px; justify-content: center; }
+.hero { display: grid; justify-items: center; gap: 2px; padding: 10px 16px 12px; border-radius: 22px; background: var(--card); box-shadow: var(--shadow); border: 4px solid transparent; }
+.hero b { font-family: var(--f-display); font-size: 22px; }
+.hero[aria-pressed="true"] { border-color: var(--sun); background: color-mix(in srgb, var(--sun) 22%, var(--card)); }
+.gamewrap { position: relative; border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); background: #0B1020; }
+#game { display: block; width: 100%; touch-action: none; }
+.pad { display: flex; justify-content: space-between; align-items: center; gap: 12px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.pad .grp { display: flex; gap: 14px; }
+.pbtn { width: 80px; height: 80px; border-radius: 50%; background: var(--card); box-shadow: var(--shadow); font-size: 34px; display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.pbtn.jump { width: 100px; height: 100px; background: var(--leaf); color: #fff; font-size: 44px; box-shadow: 0 6px 0 color-mix(in srgb, var(--leaf) 55%, #000); }
+.pbtn.on { transform: translateY(4px) scale(.96); box-shadow: 0 2px 0 rgba(28, 41, 68, .2); }
+.gatebox { position: fixed; inset: 0; z-index: 35; display: grid; place-items: center; padding: 16px; background: rgba(10, 14, 30, .6); }
+.gatebox .card { max-width: 420px; width: 100%; box-sizing: border-box; display: grid; gap: 12px; justify-items: center; text-align: center; max-height: 100%; overflow: auto; }
+.gico { font-size: 72px; line-height: 1; animation: bob 2s ease-in-out infinite; }
+.gatebox .say { font-size: clamp(19px, 5vw, 26px); margin: 0; }
+.roarbtn.gh { width: min(200px, 56vw); font-size: 18px; box-shadow: 0 8px 0 var(--mane); }
+.roarbtn.gh .lbl em { font-size: 48px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+@media (max-width: 380px) {
+  .tile .ico { font-size: 44px; }
+  .tile b { font-size: 19px; }
+}
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <button class="iconbtn" id="homeBtn" aria-label="Zurück nach Hause" hidden>🏠</button>
+    <div class="pill" aria-live="polite"><span class="star">★</span><span id="starCount">0</span></div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="soundBtn" aria-label="Vorlesen an oder aus">🔊</button>
+    <button class="iconbtn" id="parentBtn" aria-label="Eltern-Ecke">🔒</button>
+  </header>
+
+  <!-- ZUHAUSE -->
+  <section class="screen" data-screen="home">
+    <div class="hero">
+      <div class="lionwrap" id="homeLion" role="img" aria-label="Dein Löwe"></div>
+      <h1 id="hello">Hallo, Löwenkind!</h1>
+      <div class="stage" id="stageName">Löwenbaby</div>
+      <div class="progress" aria-hidden="true"><i id="progressBar" style="width:0%"></i></div>
+      <div class="small" id="progressText">Noch 10 Sterne, dann wächst dein Löwe!</div>
+    </div>
+    <div class="tiles">
+      <button class="tile wide" data-go="map" style="--c: var(--mane)"><span class="ico">🧭</span><b>Dschungel-Expedition</b><span>Das Abenteuer-Spiel</span></button>
+      <button class="tile wide" data-go="mission" style="--c: var(--leaf)"><span class="ico">🎯</span><b>Mut-Mission</b><span>Dein Abenteuer für heute</span></button>
+      <button class="tile" data-go="roar" style="--c: var(--lion-dark)"><span class="ico">🦁</span><b>Löwen-Brüller</b><span>Sag es laut!</span></button>
+      <button class="tile" data-go="feel" style="--c: var(--sea)"><span class="ico">🌦️</span><b>Gefühle-Wetter</b><span>Wie geht's dir?</span></button>
+      <button class="tile" data-go="talk" style="--c: var(--plum)"><span class="ico">🎲</span><b>Erzähl-Würfel</b><span>Wir reden</span></button>
+      <button class="tile" data-go="power" style="--c: var(--berry)"><span class="ico">⚡</span><b>Kraft tanken</b><span>Pose &amp; Atmen</span></button>
+      <button class="tile wide" data-go="jar" style="--c: var(--sun)"><span class="ico">🫙</span><b>Mein Stolz-Glas</b><span id="jarTileText">Alles, worauf du stolz bist</span></button>
+    </div>
+    <div class="world"><h2>🌴 Sprech-Dschungel</h2></div>
+    <div class="tiles">
+      <button class="tile wide" data-go="sounds" style="--c: var(--plum)"><span class="ico">🐍</span><b>Laut-Training</b><span>K · T · S · SCH üben</span></button>
+      <button class="tile" data-go="ears" style="--c: var(--sea)"><span class="ico">👂</span><b>Ohren-Detektiv</b><span>Tasse oder Tasche?</span></button>
+      <button class="tile" data-go="tongue" style="--c: var(--berry)"><span class="ico">👅</span><b>Zungen-Turnen</b><span>Mund-Gymnastik</span></button>
+    </div>
+  </section>
+
+  <!-- LAUT-AUSWAHL -->
+  <section class="screen" data-screen="sounds" hidden>
+    <h2>Welchen Laut üben wir?</h2>
+    <div class="sounds" id="soundList"></div>
+    <p class="small center">Jeder Laut hat 6 Stufen: vom Laut allein bis zum Profi-Satz.</p>
+  </section>
+
+  <!-- LAUT-TRAINING -->
+  <section class="screen" data-screen="drill" hidden>
+    <h2 id="dTitle">K wie Krähe</h2>
+    <div class="steps" id="dSteps" role="group" aria-label="Stufen"></div>
+    <div class="card" style="display:grid; gap:14px; justify-items:center">
+      <span class="cat" id="dStepName">Stufe 1 · Der Laut</span>
+      <div class="pic" id="dPic">🐦</div>
+      <div class="word" id="dWord">K K K</div>
+      <div class="itemdots" id="dDots"></div>
+      <div class="row">
+        <button class="speakbtn" id="dSpeak">🔊 Anhören</button>
+        <button class="speakbtn rec" id="dRec" hidden>🎙️ Mich aufnehmen</button>
+      </div>
+      <div class="mouthtip"><span id="dTipIco">👄</span><span id="dTip"></span></div>
+    </div>
+    <p class="small center" style="margin:0">Mama oder Papa hört zu und drückt:</p>
+    <div class="row">
+      <button class="big" id="dOk">👍 Super gesagt!</button>
+      <button class="big alt" id="dAgain">🔁 Nochmal</button>
+    </div>
+  </section>
+
+  <!-- OHREN-DETEKTIV -->
+  <section class="screen" data-screen="ears" hidden>
+    <h2>Ohren-Detektiv</h2>
+    <div class="row"><div class="seg" role="group" aria-label="Welche Laute?">
+      <button id="eKT" aria-pressed="true">K oder T</button>
+      <button id="eSSCH" aria-pressed="false">S oder SCH</button>
+      <button id="eAll" aria-pressed="false">Alles</button>
+    </div></div>
+    <div class="card center" style="display:grid; gap:10px; justify-items:center">
+      <p class="say" id="eAsk" style="font-size:clamp(24px,6.5vw,34px)">Hör gut zu! Wo ist …?</p>
+      <div class="itemdots" id="eDots"></div>
+      <button class="speakbtn" id="eReplay">🔊 Nochmal hören</button>
+    </div>
+    <div class="choices" id="eChoices"></div>
+  </section>
+
+  <!-- ZUNGEN-TURNEN -->
+  <section class="screen" data-screen="tongue" hidden>
+    <h2>Zungen-Turnen</h2>
+    <video class="mirror" id="mirror" playsinline muted autoplay hidden></video>
+    <div class="card center" style="display:grid; gap:12px; justify-items:center">
+      <div class="tl" id="tLion" role="img" aria-label="Der Löwe macht die Übung vor"><svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="l-mane" cx="100" cy="106" r="70"/>
+        <g class="l-mane"><circle cx="170" cy="106" r="22"/><circle cx="162" cy="139" r="22"/><circle cx="141" cy="164" r="22"/><circle cx="111" cy="175" r="22"/><circle cx="79" cy="172" r="22"/><circle cx="52" cy="156" r="22"/><circle cx="34" cy="128" r="22"/><circle cx="31" cy="96" r="22"/><circle cx="43" cy="66" r="22"/><circle cx="66" cy="44" r="22"/><circle cx="97" cy="35" r="22"/><circle cx="128" cy="40" r="22"/><circle cx="154" cy="58" r="22"/><circle cx="168" cy="82" r="22"/></g>
+        <circle class="l-face" cx="54" cy="58" r="17"/><circle class="l-ear-in" cx="54" cy="58" r="9"/>
+        <circle class="l-face" cx="146" cy="58" r="17"/><circle class="l-ear-in" cx="146" cy="58" r="9"/>
+        <circle class="l-face" cx="100" cy="108" r="58"/>
+        <circle class="puff l-face" cx="66" cy="140" r="24" style="stroke: var(--lion-dark); stroke-width: 2"/>
+        <circle class="puff l-face" cx="134" cy="140" r="24" style="stroke: var(--lion-dark); stroke-width: 2"/>
+        <ellipse class="l-muzzle" cx="100" cy="140" rx="32" ry="24"/>
+        <circle class="l-cheek" cx="62" cy="126" r="9"/><circle class="l-cheek" cx="138" cy="126" r="9"/>
+        <circle class="l-dark eye" cx="78" cy="96" r="8"/><circle class="l-dark eye" cx="122" cy="96" r="8"/>
+        <circle class="l-white" cx="81" cy="93" r="3"/><circle class="l-white" cx="125" cy="93" r="3"/>
+        <path class="l-stroke smile" d="M86 144 Q93 153 100 144 Q107 153 114 144"/>
+        <path class="l-stroke tight" d="M91 147 h18"/>
+        <ellipse class="l-dark mo" cx="100" cy="146" rx="15" ry="11"/>
+        <g class="kiss"><circle cx="100" cy="146" r="9" fill="#D9486A"/><circle class="l-dark" cx="100" cy="146" r="4"/></g>
+        <g class="wide"><path class="l-dark" d="M76 140 Q100 166 124 140 Z"/><path class="l-white" d="M80 141 h40 l-2 5 h-36 Z"/></g>
+        <path class="l-dark" d="M90 118 Q100 112 110 118 Q105 128 100 129 Q95 128 90 118 Z"/>
+        <g class="tg"><path class="l-tongue" d="M90 141 h20 v21 a10 10 0 0 1 -20 0 Z"/><path d="M100 146 v14" stroke="#B8324C" stroke-width="2" stroke-linecap="round"/></g>
+        <g class="air" stroke="var(--sea)" stroke-width="4" stroke-linecap="round" fill="none"><path d="M114 140 h12"/><path d="M114 148 h16"/><path d="M114 156 h10"/></g>
+        <g class="candle"><rect x="166" y="150" width="14" height="36" rx="3" fill="#F4F0E6" stroke="#C9BFA8" stroke-width="2"/><path class="flame" d="M173 147 q-8 -10 0 -22 q8 12 0 22 Z" fill="#FFB020"/></g>
+        <text class="fx fx-klapp" x="160" y="40" font-family="var(--f-display)" font-weight="900" font-size="22" fill="var(--berry)" text-anchor="middle">klapp!</text>
+        <text class="fx fx-haa" x="100" y="22" font-family="var(--f-display)" font-weight="900" font-size="28" fill="var(--berry)" text-anchor="middle">HAAA!</text>
+      </svg></div>
+      <span class="cat" id="tStep">Mach's dem Löwen nach!</span>
+      <p class="say" id="tText" style="font-size:clamp(22px,6vw,32px)">10 lustige Übungen für Zunge, Lippen und Backen. Am besten vor dem Spiegel!</p>
+      <div class="count" id="tCount" hidden>8</div>
+      <div class="itemdots" id="tDots"></div>
+    </div>
+    <div class="row">
+      <button class="big" id="tStart" style="--c: var(--berry)">▶️ Los geht's</button>
+      <button class="big alt" id="tMirror" hidden>🪞 Spiegel an</button>
+    </div>
+  </section>
+
+  <!-- DSCHUNGEL-EXPEDITION: KARTE -->
+  <section class="screen" data-screen="map" hidden>
+    <h2>Dschungel-Expedition</h2>
+    <p class="small center" style="margin:0">Finde den goldenen Löwen! Jede Station braucht ein bisschen Mut.</p>
+    <div class="heropick" id="heroPick" role="group" aria-label="Wer spielt?"></div>
+    <div class="expmap" id="expMap"></div>
+  </section>
+
+  <!-- DSCHUNGEL-EXPEDITION: SPIEL -->
+  <section class="screen" data-screen="game" hidden>
+    <div class="gamewrap" id="gameWrap"><canvas id="game" aria-label="Spielfeld"></canvas></div>
+    <div class="pad">
+      <div class="grp">
+        <button class="pbtn" id="gL" aria-label="Nach links">◀</button>
+        <button class="pbtn" id="gR" aria-label="Nach rechts">▶</button>
+      </div>
+      <button class="pbtn jump" id="gJ" aria-label="Springen">⤴</button>
+    </div>
+  </section>
+
+  <!-- MUT-MISSION -->
+  <section class="screen" data-screen="mission" hidden>
+    <h2>Deine Mut-Mission</h2>
+    <div class="card center" style="display:grid; gap:14px; justify-items:center">
+      <span class="cat" id="mCat">Reden</span>
+      <div class="mission-ico" id="mIco">🗣️</div>
+      <p class="say" id="mText" style="font-size:clamp(26px,7vw,40px)">…</p>
+      <button class="speakbtn" data-speak="mText">🔊 Nochmal vorlesen</button>
+    </div>
+    <div class="row">
+      <button class="big" id="mDone">✅ Geschafft!</button>
+      <button class="big alt" id="mNext">🔄 Andere</button>
+    </div>
+    <p class="small center">Es ist okay, wenn es kribbelt. Kribbeln heisst: Du wirst gerade mutig.</p>
+  </section>
+
+  <!-- LÖWEN-BRÜLLER -->
+  <section class="screen" data-screen="roar" hidden>
+    <h2>Löwen-Brüller</h2>
+    <div class="card center" style="display:grid; gap:10px; justify-items:center">
+      <span class="cat">Sag es ganz laut</span>
+      <p class="say" id="aText">Ich bin mutig!</p>
+      <button class="speakbtn" data-speak="aText">🔊 Vorlesen</button>
+    </div>
+    <button class="roarbtn" id="roarBtn" aria-label="Gedrückt halten und laut sagen">
+      <span class="fill" id="roarFill"></span>
+      <span class="lbl"><em>🦁</em><span id="roarLbl">Drücken &amp; brüllen!</span></span>
+    </button>
+    <p class="small center">Halt den Knopf gedrückt und ruf den Satz so laut du kannst. Loslassen, wenn er voll ist!</p>
+  </section>
+
+  <!-- GEFÜHLE -->
+  <section class="screen" data-screen="feel" hidden>
+    <h2>Wie ist dein Wetter innen drin?</h2>
+    <div class="feelings" id="feelings"></div>
+    <div class="card" id="feelAnswer" hidden style="display:grid; gap:14px">
+      <div class="center" style="font-size:72px; line-height:1" id="fIco"></div>
+      <p class="say" id="fText" style="font-size:clamp(22px,6vw,32px)"></p>
+      <div class="row" id="fAction"></div>
+      <p class="tip" id="fParent"></p>
+    </div>
+  </section>
+
+  <!-- ERZÄHL-WÜRFEL -->
+  <section class="screen" data-screen="talk" hidden>
+    <h2>Erzähl-Würfel</h2>
+    <div class="row"><div class="seg" role="group" aria-label="Wer fragt?">
+      <button id="modeMe" aria-pressed="true">Ich erzähle</button>
+      <button id="modeYou" aria-pressed="false">Ich frage Mama/Papa</button>
+    </div></div>
+    <button class="die" id="die" aria-label="Würfeln">🎲</button>
+    <div class="card center" style="display:grid; gap:12px; justify-items:center">
+      <p class="say" id="qText" style="font-size:clamp(24px,6.5vw,36px)">Tipp auf den Würfel!</p>
+      <button class="speakbtn" data-speak="qText">🔊 Vorlesen</button>
+    </div>
+    <div class="row"><button class="big" id="qDone" style="--c: var(--plum)">🗨️ Erzählt!</button></div>
+  </section>
+
+  <!-- KRAFT TANKEN -->
+  <section class="screen" data-screen="power" hidden>
+    <h2>Kraft tanken</h2>
+    <div class="row"><div class="seg" role="group" aria-label="Übung wählen">
+      <button id="pPose" aria-pressed="true">🦸 Helden-Pose</button>
+      <button id="pBreath" aria-pressed="false">🌬️ Löwen-Atmen</button>
+    </div></div>
+    <div class="card center" id="poseBox" style="display:grid; gap:12px; justify-items:center">
+      <div style="font-size:96px; line-height:1">🦸</div>
+      <p class="say" style="font-size:clamp(22px,6vw,32px)" id="poseText">Stell dich hin wie ein Superheld: Beine breit, Hände in die Hüften, Brust raus, Kinn hoch!</p>
+      <div class="count" id="poseCount">20</div>
+      <button class="big" id="poseStart" style="--c: var(--berry)">▶️ Los geht's</button>
+    </div>
+    <div class="card center" id="breathBox" hidden style="display:grid; gap:8px; justify-items:center">
+      <div class="breath" id="breathBall">🌸</div>
+      <p class="say" id="breathText" style="font-size:clamp(22px,6vw,32px)">5 Löwen-Atemzüge</p>
+      <div class="small" id="breathCount">Riech an der Blume, puste die Kerze aus.</div>
+      <button class="big" id="breathStart" style="--c: var(--sea)">▶️ Los geht's</button>
+    </div>
+  </section>
+
+  <!-- STOLZ-GLAS -->
+  <section class="screen" data-screen="jar" hidden>
+    <h2>Mein Stolz-Glas</h2>
+    <div class="jar"><div class="lid"></div><div class="shine"></div><div class="glass" id="glass"></div></div>
+    <p class="center small" id="jarCount"></p>
+    <div class="card" style="display:grid; gap:12px">
+      <label class="f" for="prideInput">Worauf bist du heute stolz? <span class="small">(Mama oder Papa schreibt mit)</span></label>
+      <div class="formrow">
+        <input type="text" id="prideInput" maxlength="120" placeholder="z.B. Ich hab allein Hallo gesagt">
+        <button class="big" id="prideAdd" style="--c: var(--sun); color:#3A2600">＋ Ins Glas</button>
+      </div>
+    </div>
+    <ul class="list" id="prideList"></ul>
+  </section>
+
+  <!-- ELTERN-TOR -->
+  <section class="screen" data-screen="gate" hidden>
+    <h2>Eltern-Ecke</h2>
+    <div class="card" style="display:grid; gap:14px">
+      <p style="margin:0; font-weight:700">Nur für Erwachsene. Bitte rechnen:</p>
+      <label class="f" for="gateInput"><span id="gateQ">7 × 6 = ?</span></label>
+      <div class="formrow">
+        <input type="number" id="gateInput" inputmode="numeric">
+        <button class="big" id="gateOk" style="--c: var(--sea)">Öffnen</button>
+      </div>
+      <p class="small" id="gateMsg" hidden>Das stimmt noch nicht. Probier nochmal.</p>
+    </div>
+  </section>
+
+  <!-- ELTERN -->
+  <section class="screen parent" data-screen="parent" hidden>
+    <h2>Eltern-Ecke</h2>
+    <div class="card" style="display:grid; gap:14px">
+      <h3>Einstellungen</h3>
+      <label class="f" for="nameInput">Name deines Kindes</label>
+      <div class="formrow">
+        <input type="text" id="nameInput" maxlength="24" placeholder="z.B. Luca">
+        <button class="big" id="nameSave" style="--c: var(--leaf)">Speichern</button>
+      </div>
+    </div>
+    <div class="card" style="display:grid; gap:14px">
+      <h3>So läuft es</h3>
+      <div class="stats" id="stats"></div>
+      <div>
+        <p class="small" style="margin:0 0 8px">Gefühle der letzten Tage</p>
+        <div class="week" id="week"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>8 Dinge, die Selbstvertrauen wirklich wachsen lassen</h3>
+      <ul class="tips">
+        <li><b>Lob den Einsatz, nicht das Talent.</b><span>«Du bist drangeblieben, obwohl es schwer war!» wirkt stärker als «Du bist so schlau». So lernt er: Anstrengung lohnt sich.</span></li>
+        <li><b>Nicht sofort retten.</b><span>Zähl innerlich bis 10, bevor du hilfst. Frag lieber: «Was könntest du probieren?» Jede selbst gelöste Kleinigkeit zahlt aufs Selbstvertrauen ein.</span></li>
+        <li><b>Das Zauberwort «noch».</b><span>Aus «Ich kann das nicht» wird «Ich kann das noch nicht». Sag es ihm vor, bis er es selbst sagt.</span></li>
+        <li><b>Gefühle benennen, nicht wegreden.</b><span>«Du bist enttäuscht, das verstehe ich» statt «Ist doch nicht schlimm». Kinder, die sich verstanden fühlen, trauen sich mehr.</span></li>
+        <li><b>Zeig deine eigenen Fehler.</b><span>Erzähl, wenn dir etwas misslingt, und wie du damit umgehst. Der Erzähl-Würfel hat dafür extra Fragen («Ich frage Mama/Papa»).</span></li>
+        <li><b>Lass ihn selbst antworten.</b><span>Wenn jemand ihn etwas fragt: warten, nicht für ihn sprechen. Auch wenn es dauert. Seine Stimme soll zählen.</span></li>
+        <li><b>Echte Aufgaben geben.</b><span>Tisch decken, Pflanze giessen, beim Bäcker bezahlen. Gebraucht werden macht stark.</span></li>
+        <li><b>10 Minuten Kind-Zeit am Tag.</b><span>Er bestimmt das Spiel, du machst mit. Kein Handy, kein Korrigieren. Das ist der grösste Vertrauens-Booster überhaupt.</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Sprech-Dschungel: so übt ihr</h3>
+      <ul class="tips">
+        <li><b>Kurz und oft.</b><span>5 Minuten täglich bringen mehr als eine Stunde am Wochenende. Aufhören, solange es noch Spass macht.</span></li>
+        <li><b>Erst hören, dann sprechen.</b><span>Der Ohren-Detektiv trainiert, Tasse und Tasche zu unterscheiden. Wer den Unterschied hört, kann ihn leichter sprechen.</span></li>
+        <li><b>Nie «Falsch!» sagen.</b><span>Wiederhole das Wort einfach richtig und betont: «Ah, die <b>K</b>atze!» Er soll Lust aufs Reden behalten. Das ist wichtiger als jeder Laut.</span></li>
+        <li><b>Trick für das K.</b><span>Kopf leicht in den Nacken legen (wie beim Gurgeln), Zungenspitze bleibt unten hinter den Zähnen. Dann rutscht der Laut nach hinten.</span></li>
+        <li><b>Trick für S und SCH.</b><span>S: Zähne zusammen, breit lächeln, Zunge bleibt drin. SCH: Kussmund nach vorne schieben. Vor dem Spiegel sieht er den Unterschied.</span></li>
+        <li><b>Aufnehmen und anhören.</b><span>Im Laut-Training kann er sich aufnehmen (wenn das Gerät es erlaubt). Sich selbst hören ist eine starke Übung.</span></li>
+      </ul>
+      <p class="small" style="margin:12px 0 0">Die App ergänzt die Logopädie, sie ersetzt sie nicht. Frag eure Logopädin, welche Laute und Stufen gerade dran sind, und übt genau die.</p>
+    </div>
+    <div class="card" style="display:grid; gap:10px">
+      <h3>Als App aufs Handy, auch ohne Internet</h3>
+      <p style="margin:0; line-height:1.5"><b>iPhone/iPad:</b> In Safari öffnen → Teilen-Knopf <span aria-hidden="true">⬆️</span> → «Zum Home-Bildschirm».<br><b>Android:</b> In Chrome öffnen → Menü ⋮ → «App installieren» oder «Zum Startbildschirm».</p>
+      <p class="small" style="margin:0" id="offlineState">Einmal mit Internet öffnen, danach läuft alles offline.</p>
+      <button class="big" id="installBtn" style="--c: var(--sea)" hidden>📲 Jetzt installieren</button>
+    </div>
+    <div class="card" style="display:grid; gap:10px">
+      <h3>So nutzt ihr die App am besten</h3>
+      <p style="margin:0; line-height:1.5">Am besten zusammen, 5 bis 10 Minuten am Tag. Morgens eine <b>Mut-Mission</b> aussuchen, abends den <b>Erzähl-Würfel</b> rollen und Erfolge ins <b>Stolz-Glas</b> legen. Die App ist der Anlass, das Wichtigste passiert zwischen euch.</p>
+      <p class="small" style="margin:0">Wenn die Unsicherheit sehr stark ist, lange anhält oder ihn im Alltag deutlich bremst: Sprich mit der Kinderärztin oder einer Kinderpsychologin. Das ist kein Versagen, sondern gute Fürsorge.</p>
+    </div>
+    <div class="card" style="display:grid; gap:10px">
+      <h3>Neu anfangen</h3>
+      <p class="small" style="margin:0">Löscht Sterne, Stolz-Glas und Gefühle auf diesem Gerät.</p>
+      <div class="row" style="justify-content:flex-start">
+        <button class="big alt" id="resetAsk">Alles zurücksetzen</button>
+        <button class="big" id="resetYes" style="--c: var(--berry)" hidden>Ja, wirklich löschen</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<canvas id="confetti"></canvas>
+<div class="overlay" id="overlay" hidden>
+  <div class="card">
+    <div class="lionwrap" id="ovLion" style="width:170px"></div>
+    <h2 id="ovTitle">Super!</h2>
+    <div class="plus" id="ovPlus">+3 ★</div>
+    <p class="small" id="ovText" style="margin:0"></p>
+    <button class="big" id="ovOk">Weiter</button>
+  </div>
+</div>
+<div class="gatebox" id="gateBox" hidden>
+  <div class="card">
+    <div class="gico" id="gIco">🦜</div>
+    <p class="say" id="gText"></p>
+    <button class="speakbtn" id="gSpeak">🔊 Vormachen</button>
+    <button class="big" id="gSaid">🗣️ Hab ich laut gesagt!</button>
+    <button class="roarbtn gh" id="gHold" aria-label="Mut-Knopf gedrückt halten"><span class="fill" id="gFill"></span><span class="lbl"><em>🦁</em><span id="gHoldLbl">Mut-Knopf gedrückt halten!</span></span></button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Inhalte ---------- */
+  const MISSIONS = [
+    { c: "Reden", i: "🗣️", t: "Sag heute zu jemandem laut und deutlich: Hallo!" },
+    { c: "Reden", i: "🤝", t: "Frag ein anderes Kind: Willst du mit mir spielen?" },
+    { c: "Reden", i: "🥐", t: "Bestell selbst etwas beim Bäcker und sag Danke." },
+    { c: "Reden", i: "🍽️", t: "Erzähl beim Abendessen von deinem Tag." },
+    { c: "Reden", i: "📞", t: "Ruf Oma oder Opa an und erzähl einen Witz." },
+    { c: "Reden", i: "💬", t: "Sag jemandem, was du an ihm magst." },
+    { c: "Reden", i: "❓", t: "Frag einen Erwachsenen etwas, das du wissen willst." },
+    { c: "Reden", i: "🙋", t: "Streck im Kindergarten oder in der Schule einmal die Hand hoch." },
+    { c: "Mut", i: "🥦", t: "Probier ein Essen, das du noch nicht kennst." },
+    { c: "Mut", i: "🧗", t: "Kletter ein Stück höher als letztes Mal." },
+    { c: "Mut", i: "🔦", t: "Hol allein etwas aus einem anderen Zimmer." },
+    { c: "Mut", i: "✋", t: "Sag freundlich und klar NEIN, wenn du etwas nicht willst." },
+    { c: "Mut", i: "🌟", t: "Mach etwas, das im Bauch kribbelt, und mach es trotzdem." },
+    { c: "Ich kann das", i: "👕", t: "Zieh dich heute ganz allein an." },
+    { c: "Ich kann das", i: "🍴", t: "Deck den Tisch für die ganze Familie." },
+    { c: "Ich kann das", i: "🧱", t: "Bau einen hohen Turm. Wenn er umfällt: nochmal bauen!" },
+    { c: "Ich kann das", i: "🔁", t: "Üb etwas, das du noch nicht kannst, dreimal hintereinander." },
+    { c: "Ich kann das", i: "🪴", t: "Giess die Pflanzen ganz allein." },
+    { c: "Bewegen", i: "🤸", t: "Mach 10 Hampelmänner, so schnell du kannst." },
+    { c: "Bewegen", i: "🦁", t: "Renn wie ein Löwe einmal ums Haus oder durch die Wohnung." },
+    { c: "Bewegen", i: "🦩", t: "Steh 10 Sekunden auf einem Bein wie ein Flamingo." },
+    { c: "Bewegen", i: "💃", t: "Tanz wild zu deinem Lieblingslied." },
+    { c: "Herz", i: "🤲", t: "Hilf jemandem, ohne dass er fragt." },
+    { c: "Herz", i: "🖍️", t: "Mal ein Bild für jemanden, den du lieb hast." },
+    { c: "Herz", i: "🪞", t: "Schau in den Spiegel und sag: Ich bin super, so wie ich bin!" },
+    { c: "Herz", i: "🫂", t: "Tröste jemanden, der traurig ist." },
+    { c: "Fehler-Freund", i: "🤪", t: "Mach absichtlich einen lustigen Fehler und lach darüber." },
+    { c: "Fehler-Freund", i: "🧠", t: "Erzähl, was heute nicht geklappt hat und was du daraus lernst." }
+  ];
+
+  const AFFIRM = [
+    "Ich bin mutig!", "Ich kann das!", "Ich probier's einfach!", "Fehler machen mich schlauer!",
+    "Ich bin gut, so wie ich bin!", "Meine Stimme ist wichtig!", "Ich bin stark!",
+    "Ich darf laut sein!", "Ich hab mich lieb!", "Ich schaff das, Schritt für Schritt!",
+    "Ich bin ein Löwenherz!", "Ich trau mich!"
+  ];
+
+  const FEELINGS = [
+    { k: "froh", i: "☀️", n: "Froh", c: "var(--sun)",
+      t: "Juhu! Freude wird grösser, wenn man sie teilt. Erzähl jemandem, warum du so froh bist!",
+      p: "Frag: «Was war der schönste Moment heute?»" },
+    { k: "stolz", i: "🌈", n: "Stolz", c: "var(--leaf)",
+      t: "Wow! Stolz sein ist ein tolles Gefühl. Das gehört ins Stolz-Glas!",
+      p: "Frag: «Was genau hast du geschafft? Wie hast du das gemacht?»", go: "jar", gl: "🫙 Ins Stolz-Glas" },
+    { k: "kribbelig", i: "🐝", n: "Kribbelig", c: "var(--plum)",
+      t: "Kribbeln im Bauch heisst: Gleich passiert etwas Spannendes. Das ist der Mut, der aufwacht!",
+      p: "Sag: «Kribbeln und Mut gehören zusammen. Ich bin bei dir.»" },
+    { k: "aengstlich", i: "🌫️", n: "Ängstlich", c: "var(--sea)",
+      t: "Angst ist okay. Auch Löwen haben manchmal Angst. Atme mit mir, dann wird dein Herz ruhiger.",
+      p: "Nicht wegreden. Sag: «Du hast Angst. Das verstehe ich. Was würde dir helfen?»", go: "power", gl: "🌬️ Löwen-Atmen", breath: true },
+    { k: "traurig", i: "🌧️", n: "Traurig", c: "var(--sea)",
+      t: "Traurig sein ist okay. Tränen dürfen raus. Frag nach einer ganz dicken Umarmung!",
+      p: "Erst trösten, dann fragen: «Magst du mir erzählen, was passiert ist?»" },
+    { k: "wuetend", i: "⛈️", n: "Wütend", c: "var(--berry)",
+      t: "Wut ist Kraft! Lass sie raus, ohne jemandem weh zu tun: Stampf fünfmal ganz fest auf den Boden!",
+      p: "Grenze halten, Gefühl erlauben: «Du darfst wütend sein. Hauen ist nicht okay.»", go: "power", gl: "🌬️ Löwen-Atmen", breath: true },
+    { k: "muede", i: "😴", n: "Müde", c: "var(--muted)",
+      t: "Auch Helden brauchen Pause. Kuschel dich ein und tank neue Kraft.",
+      p: "Heute weniger Programm, mehr Nähe." }
+  ];
+
+  const ASK_ME = [
+    "Was war heute das Lustigste?", "Wann warst du heute mutig?", "Was möchtest du unbedingt mal lernen?",
+    "Wenn du einen Tag lang ein Tier wärst: welches?", "Wer war heute nett zu dir?", "Was kannst du richtig gut?",
+    "Was hat heute nicht geklappt? Was probierst du nächstes Mal?", "Was macht dich glücklich?",
+    "Wenn du zaubern könntest: Was würdest du zaubern?", "Was magst du an dir am meisten?",
+    "Erzähl einen Traum, den du mal hattest!", "Was würdest du gern mal ganz allein machen?",
+    "Wem möchtest du heute Danke sagen?", "Was war heute schwer?",
+    "Erfinde eine Geschichte mit einem Drachen und einer Pizza!", "Wenn du König wärst: Welche Regel machst du?",
+    "Wer ist dein bester Freund und warum?", "Worauf freust du dich morgen?"
+  ];
+  const ASK_YOU = [
+    "Frag: Wovor hattest du Angst, als du klein warst?", "Frag: Was war dein lustigster Fehler als Kind?",
+    "Frag: Was magst du an mir am meisten?", "Frag: Wann warst du mal richtig mutig?",
+    "Frag: Was war dein Lieblingsspiel als Kind?", "Frag: Was hat bei dir heute nicht geklappt?",
+    "Frag: Was konntest du früher nicht und heute schon?", "Frag: Worüber hast du heute gelacht?",
+    "Frag: Wann warst du mal schüchtern?", "Frag: Was ist dein grösster Traum?"
+  ];
+
+  const STAGES = [
+    { at: 0, n: "Löwenbaby" }, { at: 10, n: "Kleiner Löwe" }, { at: 30, n: "Mutiger Löwe" },
+    { at: 60, n: "Löwenheld" }, { at: 100, n: "Löwenkönig" }
+  ];
+  const MARBLE = ["#FFC233", "#E04C74", "#2C76D2", "#2E9E5F", "#7A4FC9", "#F38B2A", "#26B5B0"];
+
+  /* ---------- Speicher ---------- */
+  const KEY = "loewenherz.v1";
+  const today = () => new Date().toISOString().slice(0, 10);
+  const fresh = () => ({ name: "", stars: 0, sound: true, pride: [], feelings: [], stats: { missions: 0, roars: 0, talks: 0, power: 0, words: 0, ears: 0, tongue: 0, levels: 0, gates: 0 }, daily: { d: "", n: {} }, mi: -1, ai: 0, logo: {}, game: { done: [] }, hero: "matteo" });
+  let S = fresh();
+  try { const raw = localStorage.getItem(KEY); if (raw) { const o = JSON.parse(raw); S = Object.assign(fresh(), o); S.stats = Object.assign(fresh().stats, o.stats); } } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  const $ = (id) => document.getElementById(id);
+  const pick = (arr, not) => { let i; do { i = Math.floor(Math.random() * arr.length); } while (arr.length > 1 && i === not); return i; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  /* ---------- Stimme ---------- */
+  let voice = null;
+  function findVoice() {
+    try {
+      const vs = speechSynthesis.getVoices();
+      voice = vs.find((v) => /de[-_]CH/i.test(v.lang)) || vs.find((v) => /^de/i.test(v.lang)) || null;
+    } catch (e) {}
+  }
+  try { findVoice(); speechSynthesis.onvoiceschanged = findVoice; } catch (e) {}
+  // In der Android-App (Capacitor) gibt es keine Browser-Stimme: dann die native Sprachausgabe nutzen.
+  const nativeTTS = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech;
+  function speak(text) {
+    if (!S.sound || !text) return;
+    if (nativeTTS) {
+      const t = text.replace(/[«»]/g, "");
+      nativeTTS.stop().catch(() => {}).then(() => nativeTTS.speak({ text: t, lang: "de-DE", rate: 0.95, pitch: 1.15, volume: 1, category: "ambient" })).catch(() => {});
+      return;
+    }
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text.replace(/[«»]/g, ""));
+      u.lang = voice ? voice.lang : "de-DE";
+      if (voice) u.voice = voice;
+      u.rate = 0.92; u.pitch = 1.15;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  /* ---------- Klänge ---------- */
+  let ac = null;
+  const ctx = () => { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) {} return ac; };
+  function tone(f, t0, dur, type, vol) {
+    const a = ctx(); if (!a || !S.sound) return;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type || "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, a.currentTime + t0);
+    g.gain.exponentialRampToValueAtTime(vol || 0.2, a.currentTime + t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + t0 + dur);
+    o.connect(g).connect(a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + dur + 0.05);
+  }
+  const chime = () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.35, "triangle", 0.18)); };
+  const pop = () => tone(880, 0, 0.12, "sine", 0.15);
+  let roarNodes = null;
+  function roarStart() {
+    const a = ctx(); if (!a || !S.sound) return;
+    const len = a.sampleRate * 2, buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const n = a.createBufferSource(); n.buffer = buf; n.loop = true;
+    const f = a.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 300; f.Q.value = 6;
+    f.frequency.linearRampToValueAtTime(1100, a.currentTime + 1.5);
+    const o = a.createOscillator(); o.type = "sawtooth"; o.frequency.value = 110;
+    o.frequency.linearRampToValueAtTime(70, a.currentTime + 1.5);
+    const og = a.createGain(); og.gain.value = 0.08;
+    const g = a.createGain(); g.gain.setValueAtTime(0.0001, a.currentTime); g.gain.exponentialRampToValueAtTime(0.35, a.currentTime + 0.25);
+    n.connect(f); o.connect(og).connect(f); f.connect(g).connect(a.destination);
+    n.start(); o.start(); roarNodes = { n, o, g };
+  }
+  function roarStop() {
+    if (!roarNodes || !ac) return;
+    const { n, o, g } = roarNodes; roarNodes = null;
+    g.gain.cancelScheduledValues(ac.currentTime);
+    g.gain.setValueAtTime(g.gain.value, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.3);
+    n.stop(ac.currentTime + 0.35); o.stop(ac.currentTime + 0.35);
+  }
+
+  /* ---------- Löwe ---------- */
+  function stageIndex(stars) { let s = 0; STAGES.forEach((st, i) => { if (stars >= st.at) s = i; }); return s; }
+  function lionSVG(stage, roaring) {
+    const petals = [9, 10, 12, 15, 18][stage];
+    const pr = [14, 19, 23, 25, 27][stage], R = [50, 53, 56, 60, 63][stage];
+    let mane = "";
+    for (let k = 0; k < petals; k++) {
+      const a = (k / petals) * Math.PI * 2;
+      mane += `<circle class="l-mane" cx="${(100 + Math.cos(a) * R).toFixed(1)}" cy="${(108 + Math.sin(a) * R).toFixed(1)}" r="${pr}"/>`;
+    }
+    mane = `<circle class="l-mane" cx="100" cy="108" r="${R}"/>` + mane;
+    const crown = stage >= 4 ? `<path class="l-crown" d="M70 44 L76 18 L88 34 L100 10 L112 34 L124 18 L130 44 Z"/><circle class="l-white" cx="100" cy="24" r="4"/>` : "";
+    const mouth = roaring
+      ? `<ellipse class="l-dark" cx="100" cy="140" rx="15" ry="17"/><ellipse class="l-tongue" cx="100" cy="148" rx="9" ry="6"/><path class="l-white" d="M88 127 l4 8 l4 -8 Z M104 127 l4 8 l4 -8 Z"/>`
+      : `<path class="l-stroke" d="M88 132 Q94 140 100 132 Q106 140 112 132"/>`;
+    const eyes = roaring
+      ? `<path class="l-stroke" d="M74 96 l14 6 M126 96 l-14 6"/><circle class="l-dark" cx="83" cy="106" r="6"/><circle class="l-dark" cx="117" cy="106" r="6"/>`
+      : `<circle class="l-dark" cx="83" cy="104" r="8"/><circle class="l-dark" cx="117" cy="104" r="8"/><circle class="l-white" cx="86" cy="101" r="3"/><circle class="l-white" cx="120" cy="101" r="3"/>`;
+    return `<svg viewBox="0 0 200 200" aria-hidden="true"><g class="${roaring ? "" : "bob"}">${mane}
+      <circle class="l-face" cx="62" cy="68" r="17"/><circle class="l-ear-in" cx="62" cy="68" r="9"/>
+      <circle class="l-face" cx="138" cy="68" r="17"/><circle class="l-ear-in" cx="138" cy="68" r="9"/>
+      <circle class="l-face" cx="100" cy="110" r="48"/>
+      <ellipse class="l-muzzle" cx="100" cy="130" rx="26" ry="19"/>
+      <circle class="l-cheek" cx="68" cy="124" r="8"/><circle class="l-cheek" cx="132" cy="124" r="8"/>
+      ${eyes}
+      <path class="l-dark" d="M92 118 Q100 114 108 118 Q104 127 100 128 Q96 127 92 118 Z"/>
+      ${mouth}${crown}</g></svg>`;
+  }
+
+  /* ---------- Sterne ---------- */
+  function award(kind, n, cap) {
+    if (S.daily.d !== today()) S.daily = { d: today(), n: {} };
+    const used = S.daily.n[kind] || 0;
+    if (cap && used >= cap) return 0;
+    S.daily.n[kind] = used + 1;
+    const before = stageIndex(S.stars);
+    S.stars += n; save(); renderTop();
+    const after = stageIndex(S.stars);
+    if (after > before) setTimeout(() => celebrate("Dein Löwe ist gewachsen!", "", `Du bist jetzt: ${STAGES[after].n}!`, after), 900);
+    return n;
+  }
+  function renderTop() {
+    $("starCount").textContent = S.stars;
+    const si = stageIndex(S.stars), st = STAGES[si], nx = STAGES[si + 1];
+    $("homeLion").innerHTML = lionSVG(si, false);
+    $("stageName").textContent = st.n;
+    $("hello").textContent = S.name ? `Hallo, ${S.name}!` : "Hallo, Löwenkind!";
+    if (nx) {
+      $("progressBar").style.width = Math.round(((S.stars - st.at) / (nx.at - st.at)) * 100) + "%";
+      const left = nx.at - S.stars;
+      $("progressText").textContent = `Noch ${left} ${left === 1 ? "Stern" : "Sterne"}, dann wirst du ${nx.n}!`;
+    } else {
+      $("progressBar").style.width = "100%";
+      $("progressText").textContent = "Du bist der Löwenkönig! Sammle weiter für dein Stolz-Glas.";
+    }
+    $("soundBtn").textContent = S.sound ? "🔊" : "🔇";
+    $("jarTileText").textContent = S.pride.length ? `${S.pride.length} ${S.pride.length === 1 ? "Murmel" : "Murmeln"} voller Stolz` : "Alles, worauf du stolz bist";
+  }
+
+  /* ---------- Feier ---------- */
+  let ovNext = null;
+  function celebrate(title, plus, text, stage) {
+    chime(); confetti();
+    $("ovLion").innerHTML = lionSVG(stage == null ? stageIndex(S.stars) : stage, true);
+    $("ovTitle").textContent = title;
+    $("ovPlus").textContent = plus; $("ovPlus").hidden = !plus;
+    $("ovText").textContent = text || "";
+    $("overlay").hidden = false;
+    speak(title + " " + (text || ""));
+    setTimeout(() => { $("ovOk").focus(); }, 50);
+  }
+  $("ovOk").addEventListener("click", () => { $("overlay").hidden = true; if (ovNext) { const f = ovNext; ovNext = null; f(); } });
+  let toastT;
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 2200); }
+
+  const cv = $("confetti"), cx = cv.getContext("2d");
+  let parts = [], raf = 0;
+  function confetti() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio;
+    const cols = ["#FFC233", "#E04C74", "#2C76D2", "#2E9E5F", "#7A4FC9", "#F38B2A"];
+    for (let i = 0; i < 140; i++) parts.push({ x: cv.width / 2, y: cv.height * 0.45, vx: (Math.random() - 0.5) * 26 * devicePixelRatio, vy: (-Math.random() * 22 - 6) * devicePixelRatio, s: (6 + Math.random() * 8) * devicePixelRatio, c: cols[i % cols.length], r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, star: i % 5 === 0 });
+    if (!raf) loop();
+  }
+  function loop() {
+    cx.clearRect(0, 0, cv.width, cv.height);
+    parts = parts.filter((p) => p.y < cv.height + 40);
+    parts.forEach((p) => {
+      p.vy += 0.6 * devicePixelRatio; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+      if (p.star) { cx.font = `${p.s * 2}px sans-serif`; cx.fillText("★", -p.s, p.s); } else cx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2);
+      cx.restore();
+    });
+    raf = parts.length ? requestAnimationFrame(loop) : 0;
+    if (!raf) cx.clearRect(0, 0, cv.width, cv.height);
+  }
+
+  /* ---------- Navigation ---------- */
+  let current = "home";
+  const enter = {};
+  function go(name) {
+    stopTimers(); stopMirror(); stopRec(); stopGame();
+    try { speechSynthesis.cancel(); } catch (e) {}
+    document.querySelectorAll("[data-screen]").forEach((s) => (s.hidden = s.dataset.screen !== name));
+    $("homeBtn").hidden = name === "home";
+    current = name;
+    window.scrollTo({ top: 0 });
+    if (enter[name]) enter[name]();
+  }
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => { pop(); go(b.dataset.go); }));
+  $("homeBtn").addEventListener("click", () => go("home"));
+  $("soundBtn").addEventListener("click", () => { S.sound = !S.sound; save(); renderTop(); if (S.sound) speak("Ich lese dir vor!"); else try { speechSynthesis.cancel(); } catch (e) {} });
+  $("parentBtn").addEventListener("click", () => go("gate"));
+  document.querySelectorAll("[data-speak]").forEach((b) => b.addEventListener("click", () => speak($(b.dataset.speak).textContent)));
+
+  enter.home = () => { renderTop(); speak(S.name ? `Hallo ${S.name}! Was machen wir heute?` : "Hallo Löwenkind! Was machen wir heute?"); };
+
+  /* ---------- Mut-Mission ---------- */
+  function showMission() {
+    if (S.mi < 0 || S.mi >= MISSIONS.length) { S.mi = pick(MISSIONS); save(); }
+    const m = MISSIONS[S.mi];
+    $("mCat").textContent = m.c; $("mIco").textContent = m.i; $("mText").textContent = m.t;
+    speak("Deine Mission: " + m.t);
+  }
+  enter.mission = showMission;
+  $("mNext").addEventListener("click", () => { S.mi = pick(MISSIONS, S.mi); save(); pop(); showMission(); });
+  $("mDone").addEventListener("click", () => {
+    const m = MISSIONS[S.mi];
+    const got = award("mission", 3, 3);
+    S.stats.missions++;
+    addPride(m.t.replace(/[.!]$/, "") + " ✔", true);
+    S.mi = pick(MISSIONS, S.mi); save();
+    ovNext = () => go("home");
+    celebrate("Mission geschafft!", got ? `+${got} ★` : "", got ? "Du bist so mutig. Eine Murmel liegt jetzt in deinem Stolz-Glas." : "Für heute hast du alle Missions-Sterne. Die Murmel kommt trotzdem ins Glas!");
+  });
+
+  /* ---------- Löwen-Brüller ---------- */
+  const HOLD = 1400;
+  let holdStart = 0, holdRaf = 0, holding = false, full = false;
+  function showAff() { $("aText").textContent = AFFIRM[S.ai % AFFIRM.length]; }
+  enter.roar = () => { showAff(); resetRoar(); speak("Sag mir nach, ganz laut: " + AFFIRM[S.ai % AFFIRM.length]); };
+  function resetRoar() { $("roarFill").style.height = "0%"; $("roarBtn").classList.remove("held", "shake"); $("roarLbl").textContent = "Drücken & brüllen!"; full = false; }
+  function holdTick() {
+    const p = Math.min(1, (performance.now() - holdStart) / HOLD);
+    $("roarFill").style.height = Math.round(p * 100) + "%";
+    if (p >= 1 && !full) { full = true; $("roarLbl").textContent = "Jetzt loslassen!"; $("roarBtn").classList.add("shake"); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} }
+    if (holding) holdRaf = requestAnimationFrame(holdTick);
+  }
+  const rb = $("roarBtn");
+  rb.addEventListener("pointerdown", (e) => {
+    e.preventDefault(); try { speechSynthesis.cancel(); } catch (x) {}
+    try { rb.setPointerCapture(e.pointerId); } catch (x) {}
+    holding = true; full = false; holdStart = performance.now(); rb.classList.add("held"); $("roarLbl").textContent = "Lauter! LAUTER!";
+    roarStart(); holdTick();
+  });
+  function release() {
+    if (!holding) return;
+    holding = false; cancelAnimationFrame(holdRaf); roarStop();
+    if (full) {
+      const said = AFFIRM[S.ai % AFFIRM.length];
+      S.ai++; S.stats.roars++;
+      const got = award("roar", 1, 6);
+      resetRoar(); showAff(); save();
+      celebrate("RAAAWR! Super laut!", got ? "+1 ★" : "", `«${said}» Das stimmt!`);
+    } else { resetRoar(); $("roarLbl").textContent = "Länger halten!"; }
+  }
+  rb.addEventListener("pointerup", release);
+  rb.addEventListener("pointercancel", release);
+  rb.addEventListener("contextmenu", (e) => e.preventDefault());
+  rb.addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && !holding && !e.repeat) { e.preventDefault(); holding = true; holdStart = performance.now(); rb.classList.add("held"); roarStart(); holdTick(); } });
+  rb.addEventListener("keyup", (e) => { if (e.key === " " || e.key === "Enter") release(); });
+
+  /* ---------- Gefühle ---------- */
+  $("feelings").innerHTML = FEELINGS.map((f, i) => `<button class="feel" data-f="${i}" style="--c:${f.c}"><span class="ico">${f.i}</span><b>${f.n}</b></button>`).join("");
+  enter.feel = () => { $("feelAnswer").hidden = true; speak("Wie ist dein Wetter innen drin? Tipp auf ein Bild."); };
+  $("feelings").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-f]"); if (!b) return;
+    const f = FEELINGS[+b.dataset.f];
+    S.feelings.push({ d: today(), k: f.k }); S.feelings = S.feelings.slice(-60);
+    const got = award("feel", 1, 1); save();
+    $("fIco").textContent = f.i; $("fText").textContent = f.t; $("fParent").textContent = "Für Mama/Papa: " + f.p;
+    $("fAction").innerHTML = f.go ? `<button class="big" id="fGo" style="--c:${f.c}">${f.gl}</button>` : "";
+    if (f.go) $("fGo").addEventListener("click", () => { go(f.go); if (f.breath) setPower("breath"); });
+    $("feelAnswer").hidden = false;
+    $("feelAnswer").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    speak(f.t); if (got) toast("+1 ★ fürs Erzählen, wie es dir geht");
+  });
+
+  /* ---------- Erzähl-Würfel ---------- */
+  let talkMode = "me", qi = -1;
+  function setMode(m) { talkMode = m; $("modeMe").setAttribute("aria-pressed", m === "me"); $("modeYou").setAttribute("aria-pressed", m === "you"); roll(); }
+  $("modeMe").addEventListener("click", () => setMode("me"));
+  $("modeYou").addEventListener("click", () => setMode("you"));
+  function roll() {
+    const list = talkMode === "me" ? ASK_ME : ASK_YOU;
+    qi = pick(list, qi);
+    const d = $("die"); d.classList.remove("rolling"); void d.offsetWidth; d.classList.add("rolling");
+    d.textContent = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][Math.floor(Math.random() * 6)];
+    pop();
+    setTimeout(() => { $("qText").textContent = list[qi]; speak(list[qi]); }, 450);
+  }
+  $("die").addEventListener("click", roll);
+  enter.talk = () => { $("qText").textContent = "Tipp auf den Würfel!"; $("die").textContent = "🎲"; speak("Tipp auf den Würfel!"); };
+  $("qDone").addEventListener("click", () => {
+    if (qi < 0) { roll(); return; }
+    S.stats.talks++;
+    const got = award("talk", 1, 5); save();
+    toast(got ? "+1 ★ Toll erzählt!" : "Toll erzählt! Noch eine Frage?");
+    chime(); setTimeout(roll, 900);
+  });
+
+  /* ---------- Kraft tanken ---------- */
+  let timers = [];
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  function stopTimers() { timers.forEach(clearTimeout); timers = []; $("breathBall").classList.remove("in"); $("poseStart").disabled = false; $("breathStart").disabled = false; $("tStart").disabled = false; }
+  function setPower(m) {
+    stopTimers();
+    $("pPose").setAttribute("aria-pressed", m === "pose"); $("pBreath").setAttribute("aria-pressed", m === "breath");
+    $("poseBox").hidden = m !== "pose"; $("breathBox").hidden = m !== "breath";
+    $("poseCount").textContent = "20"; $("breathText").textContent = "5 Löwen-Atemzüge"; $("breathCount").textContent = "Riech an der Blume, puste die Kerze aus.";
+    speak(m === "pose" ? $("poseText").textContent : "Fünf Löwen-Atemzüge. Riech an der Blume, und puste die Kerze aus.");
+  }
+  $("pPose").addEventListener("click", () => setPower("pose"));
+  $("pBreath").addEventListener("click", () => setPower("breath"));
+  enter.power = () => setPower("pose");
+  $("poseStart").addEventListener("click", () => {
+    stopTimers(); $("poseStart").disabled = true;
+    speak("Helden-Pose! Halt sie, bis die Zahl bei null ist.");
+    for (let s = 20; s >= 0; s--) later(() => {
+      $("poseCount").textContent = s;
+      if (s === 10) speak("Du bist stark!"); if (s <= 3 && s > 0) tone(660, 0, 0.12);
+      if (s === 0) { S.stats.power++; const got = award("power", 2, 3); save(); $("poseStart").disabled = false; $("poseCount").textContent = "20"; celebrate("Du bist ein Superheld!", got ? `+${got} ★` : "", "Spürst du, wie stark du dich fühlst?"); }
+    }, (20 - s) * 1000);
+  });
+  $("breathStart").addEventListener("click", () => {
+    stopTimers(); $("breathStart").disabled = true;
+    const ball = $("breathBall");
+    for (let b = 0; b < 5; b++) {
+      const t = b * 8500;
+      later(() => { ball.classList.add("in"); ball.textContent = "🌸"; $("breathText").textContent = "Riech an der Blume…"; $("breathCount").textContent = `Atemzug ${b + 1} von 5`; speak("Einatmen"); }, t);
+      later(() => { ball.classList.remove("in"); ball.textContent = "🕯️"; $("breathText").textContent = b === 4 ? "Und jetzt: Löwen-Atem, HAAA!" : "…puste die Kerze aus."; speak(b === 4 ? "Und jetzt der Löwen-Atem. Zunge raus, HAAA!" : "Ausatmen"); }, t + 4200);
+    }
+    later(() => { S.stats.power++; const got = award("power", 2, 3); save(); $("breathStart").disabled = false; ball.textContent = "🌸"; celebrate("Ganz ruhig und stark!", got ? `+${got} ★` : "", "Dein Löwenherz ist bereit."); }, 5 * 8500);
+  });
+
+  /* ---------- Stolz-Glas ---------- */
+  function addPride(text, quiet) {
+    S.pride.push({ t: text, d: today(), c: S.pride.length % MARBLE.length });
+    save(); renderTop();
+    if (!quiet) { const got = award("pride", 2, 3); celebrate("Ab ins Stolz-Glas!", got ? `+${got} ★` : "", text); }
+  }
+  function renderJar(dropLast) {
+    const show = S.pride.slice(-40);
+    $("glass").innerHTML = show.map((p, i) => `<button class="marble${dropLast && i === show.length - 1 ? " new" : ""}" data-p="${S.pride.length - show.length + i}" style="background:${MARBLE[p.c]}" aria-label="${esc(p.t)}"></button>`).join("");
+    $("jarCount").textContent = S.pride.length ? `${S.pride.length} ${S.pride.length === 1 ? "Murmel" : "Murmeln"}. Tipp auf eine, dann hörst du, was du geschafft hast.` : "Noch leer. Die erste Murmel wartet auf dich!";
+    $("prideList").innerHTML = S.pride.slice().reverse().slice(0, 12).map((p) => `<li><span class="dot" style="background:${MARBLE[p.c]}"></span><div>${esc(p.t)}<small>${new Date(p.d + "T12:00").toLocaleDateString("de-CH", { weekday: "long", day: "numeric", month: "long" })}</small></div></li>`).join("");
+  }
+  enter.jar = () => { renderJar(false); speak(S.pride.length ? `In deinem Stolz-Glas sind schon ${S.pride.length} Murmeln!` : "Dein Stolz-Glas ist noch leer. Lass es uns füllen!"); };
+  $("glass").addEventListener("click", (e) => { const b = e.target.closest("[data-p]"); if (!b) return; const p = S.pride[+b.dataset.p]; pop(); toast(p.t); speak(p.t); });
+  function submitPride() {
+    const v = $("prideInput").value.trim(); if (!v) { $("prideInput").focus(); return; }
+    $("prideInput").value = ""; addPride(v, false); ovNext = () => renderJar(true);
+  }
+  $("prideAdd").addEventListener("click", submitPride);
+  $("prideInput").addEventListener("keydown", (e) => { if (e.key === "Enter") submitPride(); });
+
+  /* ---------- Sprech-Dschungel: Inhalte ---------- */
+  const SND = [
+    { id: "K", ico: "🐦", title: "K wie Krähe", c: "var(--plum)", tipIco: "👇",
+      tip: "Zungenspitze bleibt unten hinter den Zähnen. Das K kommt ganz hinten aus dem Hals, wie ein kleines Husten.",
+      laut: ["Die Krähe ruft: K! K! K! Jetzt du!", "Ganz hinten im Hals: K, K, K.", "Wie ein kleines Husten: K!"],
+      syl: ["Ka", "Ko", "Ku", "Ki", "Ke", "Akka", "Okko", "Ukku"],
+      start: [["Katze", "🐱"], ["Kuh", "🐄"], ["Koffer", "🧳"], ["Kuchen", "🍰"], ["Kerze", "🕯️"], ["Käse", "🧀"], ["Krone", "👑"], ["Kiwi", "🥝"], ["Kamel", "🐫"], ["Kaktus", "🌵"]],
+      mid: [["Socke", "🧦"], ["Jacke", "🧥"], ["Schnecke", "🐌"], ["Rakete", "🚀"], ["Brücke", "🌉"], ["Schokolade", "🍫"], ["Zucker", "🍬"], ["Bäcker", "🥖"]],
+      end: [["Park", "🏞️"], ["Musik", "🎵"], ["Bank", "🪑"], ["Glück", "🍀"], ["Rucksack", "🎒"], ["Stock", "🪵"]],
+      sent: [["Kleine Katzen kuscheln mit dem Kamel.", "🐱"], ["Der Koch kocht Kakao in der Küche.", "👨‍🍳"], ["Kuh Kalle kaut Kekse.", "🐄"]] },
+    { id: "T", ico: "⏰", title: "T wie Tick-Tack", c: "var(--sea)", tipIco: "👆",
+      tip: "Die Zungenspitze tippt oben hinter die Zähne. Tipp, tipp, tipp, wie eine Uhr!",
+      laut: ["Die Uhr tickt: T! T! T! Jetzt du!", "Zungenspitze nach oben: T, T, T.", "Tick-tack, tick-tack!"],
+      syl: ["Ta", "To", "Tu", "Ti", "Te", "Atta", "Otto", "Uttu"],
+      start: [["Tiger", "🐯"], ["Tomate", "🍅"], ["Tasse", "☕"], ["Torte", "🎂"], ["Teddy", "🧸"], ["Tür", "🚪"], ["Taxi", "🚕"], ["Trommel", "🥁"]],
+      mid: [["Butter", "🧈"], ["Leiter", "🪜"], ["Gitarre", "🎸"], ["Kartoffel", "🥔"], ["Auto", "🚗"], ["Ritter", "🛡️"]],
+      end: [["Hut", "🎩"], ["Brot", "🍞"], ["Boot", "⛵"], ["Bett", "🛏️"], ["Paket", "📦"], ["Elefant", "🐘"]],
+      sent: [["Tim trinkt Tee aus der Tasse.", "☕"], ["Der Tiger tanzt mit der Tomate.", "🐯"], ["Tante Tina trommelt laut.", "🥁"]] },
+    { id: "S", ico: "🐍", title: "S wie Schlange", c: "var(--leaf)", tipIco: "😁",
+      tip: "Zähne zusammen, breit lächeln. Die Zunge bleibt drin hinter den Zähnen. Dann zischen wie eine Schlange!",
+      laut: ["Die Schlange zischt: Sssss! Jetzt du!", "Zähne zu, lächeln, zischen: Sssss.", "So lang du kannst: Ssssssss!"],
+      syl: ["Sa", "So", "Su", "Si", "Se", "Assa", "Osso", "Ussu"],
+      start: [["Sonne", "☀️"], ["Salat", "🥗"], ["Seife", "🧼"], ["Sofa", "🛋️"], ["Socke", "🧦"], ["Sieben", "7️⃣"]],
+      mid: [["Wasser", "💧"], ["Messer", "🔪"], ["Tasse", "☕"], ["Insel", "🏝️"], ["Hase", "🐰"], ["Nase", "👃"]],
+      end: [["Maus", "🐭"], ["Bus", "🚌"], ["Eis", "🍦"], ["Glas", "🥛"], ["Haus", "🏠"], ["Fuss", "🦶"]],
+      sent: [["Sieben Seehunde sitzen auf dem Sofa.", "🦭"], ["Die Maus isst Eis im Bus.", "🐭"], ["Susi sucht ihre Socken.", "🧦"]] },
+    { id: "SCH", ico: "🚂", title: "SCH wie Lokomotive", c: "var(--berry)", tipIco: "😗",
+      tip: "Mach einen Kussmund wie ein Fisch, Zähne zusammen und puste: Schhhh! Wie wenn ein Baby schlafen soll.",
+      laut: ["Die Lok fährt: Sch, sch, sch! Jetzt du!", "Kussmund und pusten: Schhhhh.", "Psst, das Baby schläft: Schhhh!"],
+      syl: ["Scha", "Scho", "Schu", "Schi", "Sche", "Ascha", "Oscho", "Uschu"],
+      start: [["Schaf", "🐑"], ["Schuh", "👟"], ["Schiff", "🚢"], ["Schnecke", "🐌"], ["Schere", "✂️"], ["Schokolade", "🍫"], ["Schlange", "🐍"], ["Schnee", "❄️"]],
+      mid: [["Tasche", "👜"], ["Flasche", "🍼"], ["Dusche", "🚿"], ["Muschel", "🐚"], ["Kirsche", "🍒"], ["Waschen", "🧽"]],
+      end: [["Fisch", "🐟"], ["Tisch", "🪑"], ["Busch", "🌳"], ["Frosch", "🐸"], ["Tusch", "🎺"]],
+      sent: [["Schnelle Schnecken schlürfen Schokolade.", "🐌"], ["Der Fisch schwimmt unter dem Schiff.", "🐟"], ["Das Schaf schläft im Schnee.", "🐑"]] }
+  ];
+  const STEPN = ["Der Laut", "Silben", "Am Anfang", "In der Mitte", "Am Ende", "Profi-Satz"];
+  const AGAIN = ["Fast! Nochmal ganz langsam.", "Guter Versuch! Schau auf den Mund-Tipp.", "Du schaffst das! Nochmal.", "Langsam ist super. Probier nochmal."];
+  const PRAISE = ["Super!", "Klasse!", "Wow, ganz klar!", "Toll gemacht!", "Spitze!", "Genau so!"];
+  const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  function hl(text, s) {
+    const re = { K: /(ck|k)/gi, T: /(t)/gi, S: /(s(?!ch)|ß)/gi, SCH: /(sch)/gi }[s];
+    return text.replace(re, "<mark>$1</mark>");
+  }
+  const dots = (el, n, done) => { $(el).innerHTML = Array.from({ length: n }, (_, i) => `<i class="${i < done ? "on" : ""}"></i>`).join(""); };
+
+  /* ---------- Laut-Training ---------- */
+  function renderSoundList() {
+    $("soundList").innerHTML = SND.map((s, i) => {
+      const done = (S.logo[s.id] || []).length;
+      return `<button class="snd" data-s="${i}" style="--c:${s.c}"><span class="ico">${s.ico}</span><span class="letter">${s.id}</span><span>${s.title}</span><span class="dots">${STEPN.map((_, k) => `<i class="${(S.logo[s.id] || []).includes(k) ? "on" : ""}"></i>`).join("")}</span></button>`;
+    }).join("");
+  }
+  enter.sounds = () => { renderSoundList(); speak("Welchen Laut üben wir heute?"); };
+  $("soundList").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-s]"); if (!b) return;
+    pop(); const s = SND[+b.dataset.s];
+    const done = S.logo[s.id] || [];
+    const next = STEPN.findIndex((_, k) => !done.includes(k));
+    openDrill(+b.dataset.s, next < 0 ? 0 : next);
+  });
+  let D = null;
+  function buildItems(s, step) {
+    if (step === 0) return s.laut.map((t) => ({ p: s.ico, w: s.id + " " + s.id + " " + s.id, say: t }));
+    if (step === 1) return shuffle(s.syl).slice(0, 5).map((w) => ({ p: s.ico, w, say: w }));
+    const src = [null, null, s.start, s.mid, s.end, s.sent][step];
+    return shuffle(src).slice(0, step === 5 ? 2 : 5).map(([w, p]) => ({ p, w, say: w }));
+  }
+  function openDrill(si, step) {
+    const s = SND[si];
+    D = { si, step, items: buildItems(s, step), idx: 0 };
+    go("drill");
+  }
+  function renderDrill(talk) {
+    const s = SND[D.si], it = D.items[D.idx], done = S.logo[s.id] || [];
+    $("dTitle").textContent = s.title;
+    $("dSteps").innerHTML = STEPN.map((n, k) => `<button data-step="${k}" class="${done.includes(k) ? "done" : ""}" aria-current="${k === D.step}" aria-label="Stufe ${k + 1}: ${n}">${done.includes(k) ? "★" : k + 1}</button>`).join("");
+    $("dStepName").textContent = `Stufe ${D.step + 1} · ${STEPN[D.step]}`;
+    $("dPic").textContent = it.p;
+    $("dWord").innerHTML = hl(it.w, s.id);
+    $("dWord").classList.toggle("sent", D.step === 5);
+    $("dTipIco").textContent = s.tipIco; $("dTip").textContent = s.tip;
+    dots("dDots", D.items.length, D.idx);
+    if (talk) speak(it.say);
+  }
+  enter.drill = () => { if (!D) return go("sounds"); renderDrill(false); speak(`${SND[D.si].title}. ${STEPN[D.step]}. ${D.items[0].say}`); };
+  $("dSteps").addEventListener("click", (e) => { const b = e.target.closest("[data-step]"); if (!b) return; pop(); D = { si: D.si, step: +b.dataset.step, items: buildItems(SND[D.si], +b.dataset.step), idx: 0 }; renderDrill(true); });
+  $("dSpeak").addEventListener("click", () => speak(D.items[D.idx].say));
+  $("dAgain").addEventListener("click", () => {
+    const it = D.items[D.idx];
+    speak(AGAIN[Math.floor(Math.random() * AGAIN.length)] + " " + it.say);
+  });
+  $("dOk").addEventListener("click", () => {
+    const s = SND[D.si];
+    S.stats.words++; D.idx++; chime();
+    if (D.idx < D.items.length) { save(); renderDrill(false); speak(PRAISE[Math.floor(Math.random() * PRAISE.length)] + " " + D.items[D.idx].say); return; }
+    const done = S.logo[s.id] || (S.logo[s.id] = []);
+    if (!done.includes(D.step)) done.push(D.step);
+    const got = award("logo", 2, 8); save();
+    const nextStep = D.step < 5 ? D.step + 1 : null;
+    ovNext = () => { if (nextStep != null) { D = { si: D.si, step: nextStep, items: buildItems(s, nextStep), idx: 0 }; renderDrill(true); } else go("sounds"); };
+    celebrate(nextStep != null ? "Stufe geschafft!" : `Du bist ein ${s.id}-Profi!`, got ? `+${got} ★` : "", nextStep != null ? `Weiter zu: ${STEPN[nextStep]}` : "Alle 6 Stufen geschafft. Wahnsinn!");
+  });
+
+  /* Aufnehmen & anhören (nur wo das Gerät es erlaubt) */
+  const canRec = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+  $("dRec").hidden = !canRec;
+  let rec = null, recStream = null, recT = 0;
+  function stopRec() { clearTimeout(recT); if (rec && rec.state === "recording") rec.stop(); }
+  $("dRec").addEventListener("click", async () => {
+    if (rec && rec.state === "recording") return stopRec();
+    try { speechSynthesis.cancel(); } catch (e) {}
+    try {
+      recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const chunks = [];
+      rec = new MediaRecorder(recStream);
+      rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+      rec.onstop = () => {
+        recStream.getTracks().forEach((t) => t.stop());
+        $("dRec").classList.remove("on"); $("dRec").textContent = "🎙️ Mich aufnehmen";
+        const url = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType || "audio/mp4" }));
+        const a = new Audio(url); a.play().catch(() => {}); a.onended = () => URL.revokeObjectURL(url);
+        toast("Hör dir zu! 👂");
+      };
+      rec.start(); $("dRec").classList.add("on"); $("dRec").textContent = "⏹️ Stopp";
+      recT = setTimeout(stopRec, 5000);
+    } catch (e) { $("dRec").hidden = true; toast("Aufnehmen geht auf diesem Gerät leider nicht."); }
+  });
+
+  /* ---------- Ohren-Detektiv ---------- */
+  const PAIRS = {
+    KT: [[["Kopf", "der", "👦", "K"], ["Topf", "der", "🍲", "T"]], [["Kanne", "die", "🫖", "K"], ["Tanne", "die", "🌲", "T"]],
+         [["Kasse", "die", "💰", "K"], ["Tasse", "die", "☕", "T"]], [["Karte", "die", "🃏", "K"], ["Torte", "die", "🎂", "T"]]],
+    SSCH: [[["Bus", "der", "🚌", "S"], ["Busch", "der", "🌳", "SCH"]], [["Tasse", "die", "☕", "S"], ["Tasche", "die", "👜", "SCH"]],
+           [["Seife", "die", "🧼", "S"], ["Schleife", "die", "🎀", "SCH"]], [["Kissen", "das", "🛏️", "S"], ["Kirschen", "die", "🍒", "SCH"]]]
+  };
+  const ROUNDS = 8;
+  let E = { mode: "KT", n: 0, ok: 0, pair: null, target: 0, tried: false, lock: false };
+  function setEarMode(m) {
+    E.mode = m;
+    $("eKT").setAttribute("aria-pressed", m === "KT"); $("eSSCH").setAttribute("aria-pressed", m === "SSCH"); $("eAll").setAttribute("aria-pressed", m === "ALL");
+    E.n = 0; E.ok = 0; earRound();
+  }
+  $("eKT").addEventListener("click", () => setEarMode("KT"));
+  $("eSSCH").addEventListener("click", () => setEarMode("SSCH"));
+  $("eAll").addEventListener("click", () => setEarMode("ALL"));
+  const earPrompt = () => { const w = E.pair[E.target]; return `Wo ist ${w[1]} ${w[0]}?`; };
+  function earRound() {
+    const pool = E.mode === "ALL" ? PAIRS.KT.concat(PAIRS.SSCH) : PAIRS[E.mode];
+    let p; do { p = pool[Math.floor(Math.random() * pool.length)]; } while (pool.length > 1 && p === E.pair);
+    E.pair = shuffle(p); E.target = Math.floor(Math.random() * 2); E.tried = false; E.lock = false;
+    $("eAsk").textContent = "Hör gut zu! Wo ist …?";
+    $("eChoices").innerHTML = E.pair.map((w, i) => `<button class="choice" data-c="${i}"><span class="pic">${w[2]}</span><b>${hl(w[0], w[3])}</b></button>`).join("");
+    dots("eDots", ROUNDS, E.n);
+    setTimeout(() => speak(earPrompt()), 250);
+  }
+  enter.ears = () => { E.n = 0; E.ok = 0; earRound(); };
+  $("eReplay").addEventListener("click", () => speak(earPrompt()));
+  $("eChoices").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-c]"); if (!b || E.lock) return;
+    if (+b.dataset.c === E.target) {
+      E.lock = true; b.classList.add("right"); chime();
+      if (!E.tried) E.ok++;
+      E.n++; dots("eDots", ROUNDS, E.n);
+      $("eAsk").textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+      speak($("eAsk").textContent + " " + E.pair[E.target][1] + " " + E.pair[E.target][0] + "!");
+      if (E.n >= ROUNDS) {
+        S.stats.ears++; const got = award("ears", 2, 4); save();
+        ovNext = () => { E.n = 0; E.ok = 0; earRound(); };
+        setTimeout(() => celebrate("Super-Ohren!", got ? `+${got} ★` : "", `${E.ok} von ${ROUNDS} sofort richtig gehört.`), 900);
+      } else setTimeout(earRound, 1500);
+    } else {
+      E.tried = true; b.classList.remove("wrong"); void b.offsetWidth; b.classList.add("wrong");
+      speak("Hmm, hör nochmal genau hin. " + earPrompt());
+    }
+  });
+
+  /* ---------- Zungen-Turnen ---------- */
+  const EX = [
+    ["open up", "Zunge hoch zur Nase! Und halten!"], ["open down", "Zunge runter zum Kinn! Ganz lang!"],
+    ["open clock", "Zungen-Uhr: links, rechts, links, rechts!"], ["open lick", "Eis schlecken: Lippen rundherum ablecken!"],
+    ["puffing", "Kugelfisch: Backen dick aufblasen und halten!"], ["kisswide", "Kussmund, Breitmund, Kussmund, Breitmund!"],
+    ["open click", "Pferdchen: Mit der Zunge schnalzen, klapp, klapp!"], ["open cat", "Katzenzunge: ganz breit, dann ganz spitz!"],
+    ["blow", "Kerze auspusten: ganz fest pusten!"], ["open yawn", "Gähnender Löwe: Mund weit auf, Zunge raus, HAAA!"]
+  ];
+  const EXS = 8;
+  enter.tongue = () => {
+    $("tLion").setAttribute("class", "tl"); $("tStep").textContent = "Mach's dem Löwen nach!"; $("tText").textContent = "Der Löwe macht 10 lustige Übungen vor. Mach alles nach!";
+    $("tCount").hidden = true; dots("tDots", EX.length, 0);
+    speak($("tText").textContent);
+  };
+  $("tStart").addEventListener("click", () => {
+    stopTimers(); $("tStart").disabled = true; $("tCount").hidden = false;
+    speak("Schau dem Löwen zu und mach alles nach!");
+    EX.forEach(([cls, txt], i) => {
+      const t0 = 2500 + i * (EXS + 1) * 1000;
+      later(() => { $("tLion").setAttribute("class", "tl " + cls); $("tStep").textContent = `Übung ${i + 1} von ${EX.length}`; $("tText").textContent = txt; dots("tDots", EX.length, i); speak(txt); pop(); }, t0);
+      for (let s = EXS; s >= 1; s--) later(() => { $("tCount").textContent = s; }, t0 + (EXS - s) * 1000 + 1000);
+    });
+    later(() => {
+      S.stats.tongue++; const got = award("tongue", 2, 2); save();
+      $("tLion").setAttribute("class", "tl"); $("tStep").textContent = "Geschafft!";
+      dots("tDots", EX.length, EX.length); $("tCount").hidden = true; $("tStart").disabled = false;
+      celebrate("Zungen-Champion!", got ? `+${got} ★` : "", "Deine Zunge ist jetzt super fit.");
+    }, 2500 + EX.length * (EXS + 1) * 1000 + 600);
+  });
+  let mirrorStream = null;
+  const canCam = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  $("tMirror").hidden = !canCam;
+  function stopMirror() { if (mirrorStream) { mirrorStream.getTracks().forEach((t) => t.stop()); mirrorStream = null; } $("mirror").hidden = true; $("tMirror").textContent = "🪞 Spiegel an"; }
+  $("tMirror").addEventListener("click", async () => {
+    if (mirrorStream) return stopMirror();
+    try {
+      mirrorStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      $("mirror").srcObject = mirrorStream; $("mirror").hidden = false; $("tMirror").textContent = "🪞 Spiegel aus";
+    } catch (e) { $("tMirror").hidden = true; toast("Die Kamera geht hier nicht. Nimm einen echten Spiegel!"); }
+  });
+
+  /* ---------- Dschungel-Expedition ---------- */
+  const TS = 30, ROWS = 10, WH = TS * ROWS;
+  const rnd = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  function mk(W) {
+    const g = Array.from({ length: ROWS }, () => Array(W).fill("."));
+    const o = {
+      g, W,
+      ground(a, b, top = 8) { for (let x = a; x < b; x++) for (let y = top; y < ROWS; y++) g[y][x] = "#"; return o; },
+      row(x, y, n, ch) { for (let i = 0; i < n; i++) g[y][x + i] = ch; return o; },
+      put(x, y, ch) { g[y][x] = ch; return o; },
+      gems(y, ...xs) { xs.forEach((x) => (g[y][x] = "*")); return o; }
+    };
+    return o;
+  }
+  const THEMES = {
+    jungle: { sky: ["#8FD3F4", "#DDF6CC"], far: "#8CCB97", near: "#3E9A5C", dirt: "#9A6337", dirt2: "#7E4E2A", top: "#4CB860", water: "#3A8FD8", deco: "tree", pit: "~", enemy: "🦔" },
+    cave: { sky: ["#141828", "#262038"], far: "#232842", near: "#30344F", dirt: "#5B5470", dirt2: "#463F5A", top: "#7A7196", water: "#1F4E7A", deco: "rock", pit: "~", enemy: "🕷️", dark: true },
+    temple: { sky: ["#F7C98B", "#FCEBC9"], far: "#E9B57A", near: "#C98A4B", dirt: "#C9A26B", dirt2: "#A88350", top: "#E8CF9A", water: "#3A8FD8", deco: "pillar", pit: "^", enemy: "🦂" },
+    gold: { sky: ["#FFB86B", "#FFE9AE"], far: "#EFA866", near: "#B8743E", dirt: "#B38A55", dirt2: "#946E3E", top: "#8FCB5F", water: "#3A8FD8", deco: "tree", pit: "~", enemy: "🦂" }
+  };
+  const LEVELS = [
+    { name: "Der Dschungelpfad", sub: "Lauf, spring und sammle Edelsteine", ico: "🌴", goal: "🗺️", theme: "jungle",
+      intro: "Lauf mit den Pfeilen und spring mit dem grünen Knopf. Spring auf die Igel, dann werden sie schwindelig!",
+      gates: [{ t: "say", ico: "🦜", text: "Ein Papagei versperrt den Weg! Er will ein lautes Hallo hören. Sag ganz laut: HALLO, PAPAGEI!", speak: "Hallo, Papagei!" }],
+      build: () => mk(100).ground(0, 22).put(1, 7, "P").gems(6, 5, 7, 9).ground(13, 16, 7).gems(5, 14)
+        .ground(24, 40).row(27, 5, 4, "=").gems(4, 27, 28, 29, 30).put(35, 7, "E").put(38, 7, "K")
+        .ground(43, 60).row(18, 5, 2, "Q").row(51, 5, 2, "Q").row(88, 5, 3, "Q").ground(48, 50, 6).gems(4, 49).put(55, 7, "G").gems(7, 57, 58)
+        .ground(63, 76).row(66, 5, 4, "=").row(71, 3, 3, "=").gems(2, 72).put(69, 7, "E").put(74, 7, "K")
+        .ground(78, 79, 6).ground(81, 100).gems(6, 84, 86).put(95, 7, "X") },
+    { name: "Die wackelige Brücke", sub: "Hoch über dem Krokodil-Fluss", ico: "🌉", goal: "🧭", theme: "jungle",
+      intro: "Über den Fluss führt eine wackelige Brücke. Manche Bretter fallen runter, also nicht stehen bleiben!",
+      gates: [
+        { t: "hold", ico: "🌉", text: "Die Brücke wackelt ganz schön! Halte den Mut-Knopf und sag dabei: ICH TRAU MICH!" },
+        { t: "say", ico: "🐊", text: "Ein Krokodil! Sag ganz deutlich mit K: KROKODIL, KROKODIL, GEH WEG!", speak: "Krokodil, Krokodil, geh weg!" },
+        { t: "say", ico: "🐒", text: "Ein Affe trommelt und will mitspielen. Sag mit T: TIGER, TOMATE, TORTE!", speak: "Tiger, Tomate, Torte!" }],
+      build: () => mk(112).ground(0, 20, 6).put(1, 5, "P").gems(4, 4, 6, 8).row(9, 3, 2, "Q").put(64, 3, "Q").put(12, 5, "K").put(17, 5, "G")
+        .row(20, 6, 32, "B").row(26, 6, 2, "C").row(36, 6, 3, "C").put(44, 6, ".").put(31, 5, "G").gems(4, 24, 33, 47).gems(3, 41)
+        .ground(52, 74, 6).put(58, 5, "E").put(62, 5, "K").put(66, 5, "E").row(68, 3, 3, "=").gems(2, 69).gems(4, 55, 60)
+        .row(74, 6, 22, "B").row(79, 6, 3, "C").row(88, 6, 2, "C").put(85, 6, ".").put(77, 5, "G").gems(4, 82, 92)
+        .ground(96, 112, 6).gems(4, 100, 102).put(106, 5, "X") },
+    { name: "Die dunkle Höhle", sub: "Zünde die Fackeln an", ico: "🔦", goal: "💎", theme: "cave",
+      intro: "In der Höhle ist es dunkel. Lauf zu den Fackeln und zünde sie an, dann wird es hell!",
+      gates: [
+        { t: "hold", ico: "🕯️", text: "Hier ist es dunkel. Aber du hast ein Löwenherz! Halte den Mut-Knopf und sag: ICH BIN MUTIG!" },
+        { t: "say", ico: "🦇", text: "Psst! Hier schlafen Fledermäuse. Mach ganz leise wie eine Lok: SCHHHHH!", speak: "Schhhhhh. Schhhhhh." }],
+      build: () => {
+        const m = mk(100).row(0, 0, 100, "#").ground(0, 18).put(1, 7, "P").put(5, 7, "G").put(8, 7, "T").gems(6, 11, 13).put(12, 5, "Q").put(56, 5, "Q").put(15, 7, "E")
+          .ground(21, 34).row(24, 5, 3, "=").gems(4, 25).put(28, 7, "T").put(31, 7, "K").row(36, 7, 2, "C").row(40, 7, 2, "C").gems(5, 37, 41)
+          .ground(44, 62).put(46, 7, "K").put(48, 7, "T").put(52, 7, "G").put(57, 7, "E").gems(6, 55, 59)
+          .ground(62, 70, 6).ground(73, 85, 7).put(75, 6, "T").put(80, 6, "E").gems(4, 78).gems(4, 66)
+          .ground(85, 100).put(88, 7, "T").put(95, 7, "X");
+        [3, 11, 17, 31, 45, 53, 61, 72, 83, 92].forEach((x) => m.put(x, 1, "#"));
+        return m;
+      } },
+    { name: "Der Schlangen-Tempel", sub: "Stacheln und fahrende Steine", ico: "🐍", goal: "🏺", theme: "temple",
+      intro: "Im Tempel gibt es Stacheln und fahrende Steine. Spring im richtigen Moment!",
+      gates: [
+        { t: "say", ico: "🐍", text: "Die Tempelschlange lässt dich vorbei, wenn du zischst wie sie: SSSSSS! Zähne zusammen und lächeln!", speak: "Ssssssss." },
+        { t: "say", ico: "🚪", text: "Die Tempeltür klemmt. Ruf ganz laut: TOR AUF!", speak: "Tor auf!" },
+        { t: "say", ico: "🐍", text: "Noch eine Schlange! Sag: SIEBEN SOCKEN SIND SUPER!", speak: "Sieben Socken sind super!" }],
+      build: () => mk(110).ground(0, 15).put(1, 7, "P").gems(6, 4, 6).put(10, 7, "G")
+        .ground(18, 30).row(21, 5, 3, "=").gems(4, 21, 22, 23).put(28, 7, "K")
+        .put(30, 7, "M").gems(5, 34, 37)
+        .ground(39, 58).row(6, 5, 2, "Q").put(43, 5, "Q").row(100, 5, 2, "Q").put(46, 7, "G").put(51, 7, "^").put(52, 7, "^").gems(5, 51, 52).put(55, 7, "E")
+        .ground(61, 75).ground(64, 67, 7).ground(67, 70, 6).ground(70, 73, 5).gems(3, 68).put(72, 4, "K")
+        .put(75, 7, "M")
+        .ground(79, 110).put(85, 7, "G").put(90, 7, "^").put(91, 7, "^").put(96, 7, "E").gems(5, 90, 91).put(104, 7, "X") },
+    { name: "Die rollende Steinkugel", sub: "Lauf, so schnell du kannst!", ico: "🪨", goal: "🔑", theme: "jungle",
+      intro: "Achtung, gleich rollt eine riesige Steinkugel! Lauf so schnell du kannst nach rechts und spring über alles drüber!",
+      gates: [{ t: "hold", ico: "🪨", text: "Hörst du das Rumpeln? Gleich kommt eine riesige Steinkugel! Halte den Mut-Knopf und ruf: ICH BIN SCHNELL!" }],
+      build: () => mk(120).ground(0, 104).ground(106, 120).put(1, 7, "P").put(6, 7, "G").put(10, 7, "K").put(12, 7, "R")
+        .ground(20, 21, 7).ground(32, 34, 7).ground(46, 47, 7).ground(56, 58, 6).ground(70, 71, 7).put(82, 7, "^").ground(92, 95, 7)
+        .gems(5, 20, 33, 46, 57, 70, 82, 93).gems(6, 26, 40, 63, 76, 88, 99).put(104, 2, "Z").put(114, 7, "X") },
+    { name: "Der goldene Löwe", sub: "Ganz oben wartet der Schatz", ico: "👑", goal: "🏆", theme: "gold",
+      intro: "Spring auf die Pilze, die schleudern dich ganz hoch! Ganz oben wartet der goldene Löwe.",
+      gates: [
+        { t: "say", ico: "🗿", text: "Ein Steinkopf bewacht das Tor. Sag die Zauberworte: SESAM, SCHLIESS DICH AUF!", speak: "Sesam, schliess dich auf!" },
+        { t: "hold", ico: "🦁", text: "Gleich hast du es geschafft! Halte den Mut-Knopf und ruf: ICH BIN EIN LÖWENHERZ!" }],
+      build: () => mk(110).ground(0, 16).put(1, 7, "P").gems(6, 4, 6, 8).put(12, 7, "J").put(5, 5, "Q").put(25, 5, "Q").row(87, 5, 3, "Q").row(13, 3, 5, "=").gems(2, 13, 14, 15, 16, 17)
+        .ground(16, 30).put(22, 7, "E").put(27, 7, "G")
+        .put(30, 7, "M").gems(5, 32)
+        .ground(34, 50).put(38, 7, "J").row(40, 2, 4, "=").gems(1, 40, 41, 42, 43).put(45, 7, "K").put(48, 7, "E")
+        .ground(53, 70).put(58, 7, "^").put(59, 7, "^").gems(4, 58, 59).ground(64, 66, 6).put(68, 7, "E")
+        .row(70, 8, 12, "C").gems(6, 73, 77, 80)
+        .ground(82, 110).put(84, 7, "K").put(92, 7, "G").put(97, 7, "J").ground(100, 104, 3).put(102, 2, "X") }
+  ];
+
+  function loadLevel(i) {
+    const def = LEVELS[i], m = def.build(), th = THEMES[def.theme], g = m.g, W = m.W;
+    for (let x = 0; x < W; x++) if (g[9][x] === ".") for (let y = 8; y < ROWS; y++) if (g[y][x] === ".") g[y][x] = th.pit;
+    let qs = 0; g.forEach((r) => r.forEach((ch) => { if (ch === "Q") qs++; }));
+    const L = { qs, i, def, th, W, g, gems: [], enemies: [], cps: [], gates: [], torches: [], movers: [], crumble: {}, goal: null, trig: null, stop: null, t: 0, got: 0, parts: [], shake: 0, cam: 0, jumpT: -9 };
+    const gatePos = [];
+    let start = { x: 6, y: 200 };
+    for (let y = 0; y < ROWS; y++) for (let x = 0; x < W; x++) {
+      const ch = g[y][x], px = x * TS, py = y * TS;
+      if (!"P*EKGTXMRZ".includes(ch)) continue;
+      g[y][x] = ".";
+      if (ch === "P") start = { x: px + 6, y: py + TS - 28 };
+      else if (ch === "*") L.gems.push({ x: px + 15, y: py + 15, got: false });
+      else if (ch === "E") L.enemies.push({ x: px + 3, y: py + TS - 20, w: 24, h: 20, vx: 40, stun: 0 });
+      else if (ch === "K") L.cps.push({ x: px, y: py, on: false });
+      else if (ch === "G") gatePos.push({ x: px, y: py });
+      else if (ch === "T") L.torches.push({ x: px + 15, y: py + TS, lit: false });
+      else if (ch === "X") L.goal = { x: px, y: py };
+      else if (ch === "R") L.trig = px;
+      else if (ch === "Z") L.stop = px;
+      else if (ch === "M") {
+        let c = x + 1; while (c < W && g[8][c] !== "#") c++;
+        L.movers.push({ x0: px, x: px, y: py + TS, w: 60, range: Math.max(0, c * TS - px - 60), sp: 75, dir: 1, dx: 0 });
+      }
+    }
+    gatePos.sort((a, b) => a.x - b.x).forEach((p, k) => L.gates.push({ x: p.x, y: p.y - 2 * TS, w: TS, h: 3 * TS, open: false, op: 0, asked: false, pr: def.gates[k] || def.gates[0] }));
+    L.p = { x: start.x, y: start.y, w: 18, h: 28, vx: 0, vy: 0, kx: 0, onGround: false, coyote: 0, face: 1, walk: 0, inv: 0, squash: 0, bub: { txt: `Los geht's, ${heroOf().name}!`, t: 2.2 }, carry: null };
+    L.cp = { x: start.x, y: start.y };
+    L.boulder = { on: false, done: false, x: 0, rot: 0, fall: 0, vy: 0 };
+    return L;
+  }
+
+  const tAt = (L, tx, ty) => (tx < 0 || tx >= L.W ? "#" : ty < 0 || ty >= ROWS ? "." : L.g[ty][tx]);
+  const isFull = (ch) => ch === "#" || ch === "J" || ch === "Q" || ch === "U";
+  const cDown = (L, tx, ty) => { const c = L.crumble[tx + "," + ty]; return !!(c && c.down > 0); };
+  const isTop = (L, ch, tx, ty) => ch === "=" || ch === "B" || (ch === "C" && !cDown(L, tx, ty));
+  const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  const bubble = (L, txt) => { L.p.bub = { txt, t: 1.8 }; };
+  const burst = (L, x, y, col, n, txt) => { for (let i = 0; i < n; i++) L.parts.push({ x, y, vx: (Math.random() - .5) * 220, vy: -Math.random() * 260 - 60, life: .8, col, txt }); };
+
+  function resolveX(L, p) {
+    const y0 = Math.floor(p.y / TS), y1 = Math.floor((p.y + p.h - 1) / TS), v = p.vx + p.kx;
+    if (v > 0) { const tx = Math.floor((p.x + p.w) / TS); for (let ty = y0; ty <= y1; ty++) if (isFull(tAt(L, tx, ty))) { p.x = tx * TS - p.w - 0.01; p.kx = 0; break; } }
+    else if (v < 0) { const tx = Math.floor(p.x / TS); for (let ty = y0; ty <= y1; ty++) if (isFull(tAt(L, tx, ty))) { p.x = (tx + 1) * TS; p.kx = 0; break; } }
+    L.gates.forEach((g) => { if (!g.open && p.x + p.w > g.x + 4 && p.x < g.x + g.w && p.y + p.h > g.y && p.y < g.y + g.h) p.x = g.x + 4 - p.w; });
+  }
+  function resolveY(L, p, prevB) {
+    const x0 = Math.floor((p.x + 1) / TS), x1 = Math.floor((p.x + p.w - 1) / TS);
+    if (p.vy > 0) {
+      const ty = Math.floor((p.y + p.h) / TS);
+      for (let tx = x0; tx <= x1; tx++) {
+        const ch = tAt(L, tx, ty);
+        if (isFull(ch) || (isTop(L, ch, tx, ty) && prevB <= ty * TS + 0.5)) {
+          p.y = ty * TS - p.h;
+          if (ch === "J") { p.vy = -860; L.jumpT = L.t; tone(300, 0, .1, "sine", .15); tone(640, .07, .18, "sine", .15); return; }
+          p.vy = 0; p.onGround = true;
+          if (ch === "C") { const k = tx + "," + ty, c = L.crumble[k] || (L.crumble[k] = { t: 0, down: 0, fallY: 0 }); if (!c.t && !c.down) c.t = 0.001; }
+          return;
+        }
+      }
+    } else if (p.vy < 0) {
+      const ty = Math.floor(p.y / TS);
+      for (let tx = x0; tx <= x1; tx++) {
+        const ch = tAt(L, tx, ty);
+        if (!isFull(ch)) continue;
+        p.y = (ty + 1) * TS; p.vy = 0;
+        if (ch === "Q") { L.g[ty][tx] = "U"; L.bump = { tx, ty, t: L.t }; L.got++; tone(988, 0, .07, "square", .06); tone(1319, .07, .12, "square", .06); burst(L, tx * TS + 15, ty * TS - 4, "#3FD0E8", 6, "💎"); }
+        else tone(140, 0, .06, "square", .05);
+        return;
+      }
+    }
+  }
+  function respawn(L) {
+    const p = L.p;
+    p.x = L.cp.x; p.y = L.cp.y; p.vx = p.vy = p.kx = 0; p.inv = 1; p.carry = null;
+    if (L.boulder.on) { L.boulder.on = false; L.shake = 0; roarStop(); }
+    bubble(L, ["Hoppla! Nochmal!", "Kein Problem, weiter!", "Fehler machen schlau!"][Math.floor(Math.random() * 3)]);
+    tone(330, 0, .15, "triangle", .1); tone(220, .12, .2, "triangle", .1);
+  }
+
+  function gUpdate(L, dt) {
+    L.t += dt;
+    const p = L.p;
+    L.movers.forEach((m) => {
+      const nx = Math.max(m.x0, Math.min(m.x0 + m.range, m.x + m.dir * m.sp * dt));
+      m.dx = nx - m.x; m.x = nx;
+      if ((m.dir > 0 && m.x >= m.x0 + m.range) || (m.dir < 0 && m.x <= m.x0)) m.dir *= -1;
+    });
+    for (const k in L.crumble) {
+      const c = L.crumble[k];
+      if (c.down > 0) { c.down -= dt; c.fallY += dt * 260; if (c.down <= 0) { c.down = 0; c.t = 0; c.fallY = 0; } }
+      else if (c.t > 0) { c.t += dt; if (c.t > 0.5) { c.down = 2.6; c.t = 0; c.fallY = 0; } }
+    }
+    const dir = (gIn.r ? 1 : 0) - (gIn.l ? 1 : 0);
+    if (dir) p.face = dir;
+    const target = dir * 170;
+    p.vx += Math.sign(target - p.vx) * Math.min(Math.abs(target - p.vx), 1800 * dt);
+    p.kx *= Math.pow(0.02, dt);
+    gIn.buf -= dt; p.coyote -= dt; p.inv -= dt; p.squash *= Math.pow(0.002, dt);
+    if (p.bub) { p.bub.t -= dt; if (p.bub.t <= 0) p.bub = null; }
+    if (gIn.buf > 0 && p.coyote > 0) { p.vy = -560; p.coyote = 0; gIn.buf = 0; p.carry = null; tone(520, 0, .1, "square", .04); }
+    p.vy = Math.min(900, p.vy + 1500 * dt);
+    if (p.carry) p.x += p.carry.dx;
+    p.x += (p.vx + p.kx) * dt;
+    resolveX(L, p);
+    const prevB = p.y + p.h, was = p.onGround;
+    p.y += p.vy * dt;
+    p.onGround = false; p.carry = null;
+    resolveY(L, p, prevB);
+    if (!p.onGround && p.vy >= 0) L.movers.forEach((m) => {
+      if (p.x + p.w > m.x + 2 && p.x < m.x + m.w - 2 && prevB <= m.y + 0.5 && p.y + p.h >= m.y) { p.y = m.y - p.h; p.vy = 0; p.onGround = true; p.carry = m; }
+    });
+    if (p.onGround) { p.coyote = 0.12; if (!was) p.squash = 1; }
+    if (p.onGround && Math.abs(p.vx) > 10) p.walk += dt * 14;
+
+    const hz = (x, y) => { const ch = tAt(L, Math.floor(x / TS), Math.floor(y / TS)); return ch === "~" || (ch === "^" && y % TS > 14); };
+    if (p.y > WH + 40 || hz(p.x + 4, p.y + p.h - 2) || hz(p.x + p.w - 4, p.y + p.h - 2)) { respawn(L); return; }
+
+    L.enemies.forEach((e) => {
+      if (e.stun > 0) e.stun -= dt;
+      else {
+        const nx = e.x + e.vx * dt, front = e.vx > 0 ? nx + e.w : nx;
+        const tx = Math.floor(front / TS), ty = Math.floor((e.y + e.h - 1) / TS);
+        if (isFull(tAt(L, tx, ty)) || tAt(L, tx, ty + 1) !== "#") e.vx *= -1; else e.x = nx;
+      }
+      if (hit(p, e)) {
+        if (p.vy > 0 && p.y + p.h - e.y < 14) { e.stun = 2.5; p.vy = -380; tone(700, 0, .08, "sine", .15); tone(1000, .06, .1, "sine", .12); burst(L, e.x + 12, e.y, "#FFC233", 6, "★"); }
+        else if (e.stun <= 0 && p.inv <= 0) { p.inv = 1.2; p.kx = (p.x + p.w / 2 < e.x + e.w / 2 ? -1 : 1) * 260; p.vy = -260; bubble(L, "Autsch!"); tone(180, 0, .2, "sawtooth", .07); }
+      }
+    });
+    L.gems.forEach((g) => { if (!g.got && Math.abs(g.x - (p.x + p.w / 2)) < 18 && Math.abs(g.y - (p.y + p.h / 2)) < 22) { g.got = true; L.got++; tone(1320, 0, .08, "triangle", .12); burst(L, g.x, g.y, "#3FD0E8", 5); } });
+    L.cps.forEach((k) => { if (!k.on && hit(p, { x: k.x, y: k.y - 20, w: TS, h: 50 })) { k.on = true; L.cp = { x: k.x + 6, y: k.y + TS - 28 }; bubble(L, "Checkpoint!"); tone(880, 0, .1, "triangle", .12); tone(1175, .08, .15, "triangle", .12); } });
+    L.torches.forEach((tc) => { if (!tc.lit && Math.abs(tc.x - (p.x + p.w / 2)) < 26 && Math.abs(tc.y - (p.y + p.h)) < 40) { tc.lit = true; bubble(L, "Licht an!"); chime(); } });
+    for (const g of L.gates) {
+      if (g.open) g.op = Math.min(1, g.op + dt * 1.2);
+      else if (!g.asked && p.x + p.w > g.x - 36 && p.y < g.y + g.h && p.y + p.h > g.y) { g.asked = true; p.vx = 0; openGate(g); return; }
+    }
+    const B = L.boulder;
+    if (L.trig != null && !B.on && !B.done && p.x > L.trig) { B.on = true; B.x = p.x - 330; B.fall = 0; B.vy = 0; roarStart(); bubble(L, "LAUF!!!"); }
+    if (B.on) {
+      B.x += 135 * dt; B.rot += 135 * dt / 40; L.shake = 2.5;
+      if (L.stop != null && B.x > L.stop + 20) { B.vy += 900 * dt; B.fall += B.vy * dt; }
+      if (B.fall > 160) { B.on = false; B.done = true; roarStop(); L.shake = 0; burst(L, B.x, 250, "#3A8FD8", 14); bubble(L, "Puh! Geschafft!"); }
+      else if (Math.hypot(B.x - (p.x + p.w / 2), 200 + B.fall - (p.y + p.h / 2)) < 50) { respawn(L); return; }
+    }
+    L.parts.forEach((q) => { q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 600 * dt; });
+    L.parts = L.parts.filter((q) => q.life > 0);
+    const maxX = L.W * TS - gViewW, tgt = p.x + p.w / 2 - gViewW * 0.4;
+    L.cam = maxX <= 0 ? maxX / 2 : Math.max(0, Math.min(maxX, L.cam + (tgt - L.cam) * Math.min(1, dt * 8)));
+    if (L.goal && hit(p, { x: L.goal.x - 6, y: L.goal.y - 90, w: TS + 12, h: 120 })) winLevel(L);
+  }
+
+  /* Zeichnen */
+  const gc = $("game"), gx = gc.getContext("2d");
+  const dark = document.createElement("canvas"), dctx = dark.getContext("2d");
+  let gScale = 1, gViewW = 400, gDpr = 1;
+  function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function drawBack(c, L) {
+    const th = L.th, W = gViewW;
+    c.fillStyle = th.far; c.beginPath(); c.moveTo(0, WH);
+    for (let sx = 0; sx <= W + 10; sx += 10) { const u = sx + L.cam * 0.25; c.lineTo(sx, 150 + Math.sin(u * 0.012) * 28 + Math.sin(u * 0.033) * 10); }
+    c.lineTo(W + 10, WH); c.closePath(); c.fill();
+    const off = L.cam * 0.5, per = 150, i0 = Math.floor(off / per) - 1;
+    c.fillStyle = th.near;
+    for (let i = i0; i < i0 + W / per + 3; i++) {
+      const x = i * per - off, r = rnd(i), h = 70 + r * 60;
+      if (th.deco === "tree") {
+        c.fillRect(x + 60, WH - h - 20, 12, h + 20);
+        c.beginPath(); c.arc(x + 66, WH - h - 30, 34 + r * 12, 0, 7); c.arc(x + 40, WH - h - 12, 24, 0, 7); c.arc(x + 92, WH - h - 14, 26, 0, 7); c.fill();
+      } else if (th.deco === "rock") {
+        c.beginPath(); c.moveTo(x + 30, 0); c.lineTo(x + 50, 40 + r * 70); c.lineTo(x + 70, 0); c.fill();
+        c.beginPath(); c.moveTo(x + 90, WH); c.lineTo(x + 110, WH - 50 - r * 60); c.lineTo(x + 130, WH); c.fill();
+      } else { c.fillRect(x + 50, WH - 150 - r * 40, 26, 200); c.fillRect(x + 42, WH - 160 - r * 40, 42, 12); }
+    }
+  }
+  function drawTiles(c, L) {
+    const th = L.th, p = L.p, x0 = Math.max(0, Math.floor(L.cam / TS)), x1 = Math.min(L.W - 1, Math.ceil((L.cam + gViewW) / TS));
+    for (let ty = 0; ty < ROWS; ty++) for (let tx = x0; tx <= x1; tx++) {
+      const ch = L.g[ty][tx], X = tx * TS, Y = ty * TS;
+      if (ch === "#") {
+        c.fillStyle = th.dirt; c.fillRect(X, Y, TS + .5, TS + .5);
+        const r = rnd(tx * 31 + ty); c.fillStyle = th.dirt2; c.fillRect(X + 4 + r * 14, Y + 9 + r * 8, 5, 4); c.fillRect(X + 20 - r * 10, Y + 21, 4, 3);
+        if (ty > 0 && !isFull(tAt(L, tx, ty - 1))) { c.fillStyle = th.top; c.fillRect(X, Y, TS + .5, 6); c.beginPath(); for (let i = 0; i < 3; i++) { c.moveTo(X + 10 + i * 10, Y + 6); c.arc(X + 5 + i * 10, Y + 6, 5, 0, Math.PI); } c.fill(); }
+      } else if (ch === "Q" || ch === "U") {
+        const bp = L.bump && L.bump.tx === tx && L.bump.ty === ty ? Math.max(0, 1 - (L.t - L.bump.t) * 6) * 6 : 0;
+        c.fillStyle = ch === "Q" ? "#F5B82E" : "#9C7A55"; rrect(c, X + 1, Y + 1 - bp, TS - 2, TS - 2, 4); c.fill();
+        c.fillStyle = ch === "Q" ? "#C98A12" : "#7E6040"; c.fillRect(X + 1, Y + TS - 5 - bp, TS - 2, 4);
+        if (ch === "Q") { c.fillStyle = "#fff"; c.font = "900 20px Grandstander, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("?", X + 15, Y + 15 - bp + Math.sin(L.t * 4) * 1); }
+      } else if (ch === "J") {
+        const sq = L.t - L.jumpT < .2 ? 4 : 0;
+        c.fillStyle = "#F4E9D8"; c.fillRect(X + 10, Y + 14, 10, 16);
+        c.fillStyle = "#E5484D"; c.beginPath(); c.ellipse(X + 15, Y + 16 + sq, 16, 13 - sq, 0, Math.PI, 0); c.fill();
+        c.fillStyle = "#fff"; [[8, 10], [15, 6], [22, 10]].forEach(([a, b]) => { c.beginPath(); c.arc(X + a, Y + b + sq, 2.5, 0, 7); c.fill(); });
+      } else if (ch === "=") {
+        c.fillStyle = "#8A5A2B"; c.fillRect(X, Y, TS + .5, 10); c.fillStyle = "#6E4520"; c.fillRect(X, Y + 8, TS + .5, 2); c.fillRect(X + 14, Y, 2, 10);
+      } else if (ch === "B" || ch === "C") {
+        const cr = L.crumble[tx + "," + ty], dy = ch === "C" && cr && cr.down > 0 ? cr.fallY : 0;
+        const on = Math.abs(p.y + p.h - Y) < 2 ? Math.max(0, 5 - Math.abs(p.x + p.w / 2 - X - 15) / 12) : 0;
+        const wob = ch === "C" && cr && cr.t > 0 ? Math.sin(L.t * 60) * 1.5 : 0;
+        c.strokeStyle = "#6B4423"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(X, Y - 14); c.lineTo(X + TS, Y - 14); c.moveTo(X + 15, Y - 14); c.lineTo(X + 15, Y + on); c.stroke();
+        if (dy < 300) {
+          c.fillStyle = ch === "C" ? "#C9A06E" : "#9C6B3A"; c.fillRect(X + 1 + wob, Y + on + dy, TS - 2, 8);
+          if (ch === "C") { c.strokeStyle = "#7A5230"; c.lineWidth = 1; c.beginPath(); c.moveTo(X + 9 + wob, Y + on + dy); c.lineTo(X + 15 + wob, Y + 8 + on + dy); c.stroke(); }
+        }
+      } else if (ch === "~") {
+        const surf = tAt(L, tx, ty - 1) !== "~", top = surf ? 8 : 0;
+        c.fillStyle = th.water; c.globalAlpha = .85; c.fillRect(X, Y + top, TS + .5, TS + .5 - top); c.globalAlpha = 1;
+        if (surf) { c.fillStyle = "rgba(255,255,255,.6)"; c.fillRect(X, Y + 8 + Math.sin(L.t * 3 + tx) * 2, TS, 2); }
+      } else if (ch === "^") {
+        c.fillStyle = "#8C8C99"; c.beginPath();
+        for (let i = 0; i < 3; i++) { c.moveTo(X + i * 10, Y + TS); c.lineTo(X + i * 10 + 5, Y + 14); c.lineTo(X + i * 10 + 10, Y + TS); }
+        c.fill();
+      }
+    }
+  }
+  const HEROES = {
+    matteo: { name: "Matteo", hair: "#9A6A3A", hairHi: "#C99A5E", eye: "#5F7D63", skin: "#F3CBA8", scale: 1 },
+    elara: { name: "Elara", hair: "#6A4326", hairHi: "#8A5A36", eye: "#5B7896", skin: "#F6D2B6", scale: 0.92 }
+  };
+  const heroOf = () => HEROES[S.hero] || HEROES.matteo;
+  function drawPlayer(c, p, t) {
+    if (p.inv > 0 && Math.floor(t * 12) % 2) return;
+    const s = p.squash, run = p.onGround && Math.abs(p.vx) > 10 ? Math.sin(p.walk) : (p.onGround ? 0 : 0.7);
+    c.save(); c.translate(p.x + p.w / 2, p.y + p.h); c.scale(p.face * (1 + s * .15), 1 - s * .15);
+    drawHero(c, S.hero || "matteo", run, t);
+    c.restore();
+  }
+  // Zeichnet die Figur mit den Füssen auf (0,0), Blick nach rechts.
+  function drawHero(c, id, run, t) {
+    const h = HEROES[id] || HEROES.matteo, girl = id === "elara";
+    c.save(); c.scale(h.scale, h.scale);
+    // Haare hinten (Elaras Bob fällt bis zum Hals)
+    if (girl) { c.fillStyle = h.hair; rrect(c, -9, -36, 16, 18, 6); c.fill(); }
+    // Beine + Stiefel
+    c.fillStyle = "#8C7650"; c.fillRect(-6 + run * 3, -10, 5, 7); c.fillRect(1 - run * 3, -10, 5, 7);
+    c.fillStyle = "#4A2E18"; c.fillRect(-7 + run * 3, -4, 7, 4); c.fillRect(0 - run * 3, -4, 7, 4);
+    // hinterer Arm
+    c.fillStyle = "#6E4325"; c.fillRect(-2 - run * 3, -18, 4, 8);
+    // Hemd + Lederjacke + Gürtel
+    c.fillStyle = "#D9C28C"; rrect(c, -7, -20, 14, 11, 3); c.fill();
+    c.fillStyle = "#7A4A28"; c.fillRect(-7, -20, 4, 11); c.fillRect(4, -20, 3, 11);
+    c.fillStyle = "#3B2412"; c.fillRect(-7, -11, 14, 2);
+    // Tasche + Riemen
+    c.strokeStyle = "#5A3518"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(4, -20); c.lineTo(-5, -10); c.stroke();
+    c.fillStyle = "#8A5A2B"; rrect(c, -9, -12, 6, 5, 1.5); c.fill();
+    // vorderer Arm mit Hand
+    c.fillStyle = "#7A4A28"; c.fillRect(-1 + run * 3, -19, 4, 7);
+    c.fillStyle = h.skin; c.beginPath(); c.arc(1 + run * 3, -11, 2.2, 0, 7); c.fill();
+    // Hals + Kopf
+    c.fillStyle = h.skin; c.fillRect(-1, -22, 4, 3);
+    c.beginPath(); c.arc(1, -28, 8, 0, 7); c.fill();
+    c.beginPath(); c.arc(-6, -28, 2, 0, 7); c.fill();
+    // Haare vorne
+    c.fillStyle = h.hair;
+    if (girl) {
+      c.beginPath(); c.moveTo(-8, -26); c.quadraticCurveTo(-8, -37, 2, -36); c.quadraticCurveTo(10, -35, 9, -29); c.quadraticCurveTo(5, -32, 0, -30); c.quadraticCurveTo(-3, -28, -5, -24); c.closePath(); c.fill();
+      c.fillStyle = h.hairHi; c.fillRect(-4, -34, 6, 1.5);
+      c.fillStyle = "#26B5A8"; rrect(c, -5, -32, 5, 2.4, 1.2); c.fill();
+    } else {
+      c.beginPath(); c.moveTo(-8, -27); c.quadraticCurveTo(-8, -36, 1, -36); c.quadraticCurveTo(8, -36, 10, -33); c.quadraticCurveTo(11, -30, 8, -31); c.quadraticCurveTo(4, -33, -1, -31); c.quadraticCurveTo(-4, -30, -5, -27); c.closePath(); c.fill();
+      c.fillStyle = h.hairHi; c.beginPath(); c.moveTo(2, -35); c.quadraticCurveTo(8, -35, 10, -32); c.quadraticCurveTo(6, -33, 2, -33); c.fill();
+    }
+    // Gesicht
+    c.fillStyle = "#fff"; c.beginPath(); c.ellipse(5, -28, 2.2, 2, 0, 0, 7); c.fill();
+    c.fillStyle = h.eye; c.beginPath(); c.arc(5.6, -28, 1.5, 0, 7); c.fill();
+    c.fillStyle = "#1A1410"; c.beginPath(); c.arc(5.8, -28, 0.7, 0, 7); c.fill();
+    c.fillStyle = "rgba(240,120,120,.45)"; c.beginPath(); c.arc(4, -24.5, 1.8, 0, 7); c.fill();
+    c.fillStyle = "#7A2E2E"; c.beginPath(); c.moveTo(4, -23.5); c.quadraticCurveTo(6.5, -20.5, 8.5, -23.5); c.closePath(); c.fill();
+    c.fillStyle = "#fff"; c.fillRect(4.8, -23.5, 3, 1);
+    // Fedora
+    c.fillStyle = "#6B4423"; c.beginPath(); c.ellipse(1, -35, 12, 2.6, -0.05, 0, 7); c.fill();
+    rrect(c, -5, -42, 12, 8, 3); c.fill();
+    c.fillStyle = "#3B2412"; c.fillRect(-5, -37, 12, 2);
+    c.restore();
+  }
+  function heroPortrait(id) {
+    const cv = document.createElement("canvas"), d = Math.min(2, devicePixelRatio || 1);
+    cv.width = 90 * d; cv.height = 110 * d; cv.style.width = "90px"; cv.style.height = "110px";
+    const c = cv.getContext("2d"); c.setTransform(2.2 * d, 0, 0, 2.2 * d, 45 * d, 104 * d); drawHero(c, id, 0, 0);
+    return cv;
+  }
+  function renderHeroPick() {
+    const box = $("heroPick"); box.innerHTML = "";
+    Object.keys(HEROES).forEach((id) => {
+      const b = document.createElement("button");
+      b.className = "hero"; b.setAttribute("aria-pressed", (S.hero || "matteo") === id);
+      b.appendChild(heroPortrait(id));
+      const n = document.createElement("b"); n.textContent = HEROES[id].name; b.appendChild(n);
+      b.addEventListener("click", () => { S.hero = id; save(); pop(); renderHeroPick(); speak(`${HEROES[id].name} ist bereit für das Abenteuer!`); });
+      box.appendChild(b);
+    });
+  }
+  function emoji(c, ch, x, y, size) { c.fillStyle = "#000"; c.font = `${size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(ch, x, y); }
+  function gDraw(L) {
+    const c = gx, th = L.th, k = gScale * gDpr, t = L.t, p = L.p;
+    const sh = L.shake ? (Math.random() - .5) * L.shake * 2 : 0;
+    c.setTransform(k, 0, 0, k, 0, 0);
+    const gr = c.createLinearGradient(0, 0, 0, WH); gr.addColorStop(0, th.sky[0]); gr.addColorStop(1, th.sky[1]);
+    c.fillStyle = gr; c.fillRect(0, 0, gViewW + 1, WH);
+    drawBack(c, L);
+    c.setTransform(k, 0, 0, k, (-L.cam + sh) * k, sh * k * .5);
+    drawTiles(c, L);
+    L.movers.forEach((m) => { c.fillStyle = "#7D6A55"; rrect(c, m.x, m.y, m.w, 12, 3); c.fill(); c.fillStyle = "#A08A70"; c.fillRect(m.x + 2, m.y, m.w - 4, 3); });
+    L.cps.forEach((q) => {
+      c.fillStyle = "#6B4423"; c.fillRect(q.x + 13, q.y - 12, 4, 42);
+      c.fillStyle = q.on ? "#E04C74" : "#9AA0B5"; c.beginPath(); c.moveTo(q.x + 17, q.y - 12); c.lineTo(q.x + 36, q.y - 5 + (q.on ? Math.sin(t * 6) * 2 : 0)); c.lineTo(q.x + 17, q.y + 2); c.fill();
+    });
+    L.torches.forEach((q) => {
+      c.fillStyle = "#6B4423"; c.fillRect(q.x - 2, q.y - 26, 4, 26);
+      if (q.lit) { const f = Math.sin(t * 20) * 2; c.fillStyle = "#FF8A1E"; c.beginPath(); c.arc(q.x, q.y - 32, 8 + f * .5, 0, 7); c.fill(); c.fillStyle = "#FFE066"; c.beginPath(); c.arc(q.x, q.y - 30, 4, 0, 7); c.fill(); }
+      else { c.fillStyle = "#555"; c.fillRect(q.x - 4, q.y - 30, 8, 5); }
+    });
+    L.gems.forEach((g) => {
+      if (g.got) return;
+      const b = Math.sin(t * 3 + g.x) * 3;
+      c.fillStyle = "#3FD0E8"; c.beginPath(); c.moveTo(g.x, g.y - 9 + b); c.lineTo(g.x + 8, g.y + b); c.lineTo(g.x, g.y + 10 + b); c.lineTo(g.x - 8, g.y + b); c.fill();
+      c.fillStyle = "rgba(255,255,255,.75)"; c.beginPath(); c.moveTo(g.x, g.y - 9 + b); c.lineTo(g.x + 3, g.y - 1 + b); c.lineTo(g.x - 3, g.y - 1 + b); c.fill();
+    });
+    L.gates.forEach((g) => {
+      if (g.op >= 1) return;
+      c.globalAlpha = 1 - g.op;
+      c.strokeStyle = "#2E7D32"; c.lineWidth = 4;
+      for (let i = 0; i < 3; i++) { c.beginPath(); for (let yy = 0; yy <= g.h; yy += 6) c.lineTo(g.x + 6 + i * 9 + Math.sin(yy * .2 + i) * 3, g.y + yy); c.stroke(); }
+      emoji(c, g.pr.ico, g.x + 15, g.y + 26 - g.op * 80 + Math.sin(t * 3) * 3, 34);
+      c.globalAlpha = 1;
+    });
+    L.enemies.forEach((e) => {
+      c.save(); c.translate(e.x + e.w / 2, e.y + e.h / 2);
+      if (e.vx > 0) c.scale(-1, 1);
+      if (e.stun > 0) c.rotate(Math.sin(t * 10) * .4);
+      emoji(c, L.th.enemy, 0, 0, 24);
+      c.restore();
+      if (e.stun > 0) emoji(c, "💫", e.x + e.w / 2, e.y - 8, 16);
+    });
+    if (L.goal) {
+      const gx0 = L.goal.x + 15, gy0 = L.goal.y + 8 + Math.sin(t * 2) * 3;
+      c.save(); c.translate(gx0, gy0); c.rotate(t * .6); c.fillStyle = "rgba(255,215,0,.35)";
+      for (let i = 0; i < 8; i++) { c.rotate(Math.PI / 4); c.beginPath(); c.moveTo(0, 0); c.lineTo(-6, 40); c.lineTo(6, 40); c.fill(); }
+      c.restore(); emoji(c, L.def.goal, gx0, gy0, 34);
+    }
+    const B = L.boulder;
+    if (B.on) {
+      c.save(); c.translate(B.x, 200 + B.fall); c.rotate(B.rot);
+      c.fillStyle = "#8A8178"; c.beginPath(); c.arc(0, 0, 40, 0, 7); c.fill();
+      c.strokeStyle = "#5E574F"; c.lineWidth = 3; c.beginPath(); c.moveTo(-20, -10); c.lineTo(0, 5); c.lineTo(12, -18); c.moveTo(5, 20); c.lineTo(22, 12); c.stroke();
+      c.fillStyle = "#A39A90"; c.beginPath(); c.arc(-14, -18, 7, 0, 7); c.fill();
+      c.restore();
+    }
+    drawPlayer(c, p, t);
+    L.parts.forEach((q) => { c.globalAlpha = Math.max(0, q.life / .8); if (q.txt) { c.fillStyle = q.col; c.font = "bold 14px sans-serif"; c.textAlign = "center"; c.fillText(q.txt, q.x, q.y); } else { c.fillStyle = q.col; c.beginPath(); c.arc(q.x, q.y, 3, 0, 7); c.fill(); } });
+    c.globalAlpha = 1;
+    if (p.bub) {
+      c.font = "800 13px Nunito, sans-serif"; const w = c.measureText(p.bub.txt).width + 16, bx = p.x + p.w / 2 - w / 2, by = p.y - 66;
+      c.fillStyle = "#fff"; rrect(c, bx, by, w, 22, 10); c.fill();
+      c.beginPath(); c.moveTo(p.x + p.w / 2 - 5, by + 22); c.lineTo(p.x + p.w / 2, by + 28); c.lineTo(p.x + p.w / 2 + 5, by + 22); c.fill();
+      c.fillStyle = "#1C2944"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(p.bub.txt, p.x + p.w / 2, by + 11);
+    }
+    if (th.dark) {
+      const d = dctx; d.setTransform(1, 0, 0, 1, 0, 0); d.globalCompositeOperation = "source-over";
+      d.fillStyle = "rgba(4,6,16,0.93)"; d.fillRect(0, 0, dark.width, dark.height);
+      d.globalCompositeOperation = "destination-out";
+      const hole = (wx, wy, r) => { const sx = (wx - L.cam) * k, sy = wy * k, rr = r * k; const g2 = d.createRadialGradient(sx, sy, rr * .3, sx, sy, rr); g2.addColorStop(0, "rgba(0,0,0,1)"); g2.addColorStop(1, "rgba(0,0,0,0)"); d.fillStyle = g2; d.beginPath(); d.arc(sx, sy, rr, 0, 7); d.fill(); };
+      hole(p.x + p.w / 2, p.y + p.h / 2, 95);
+      L.torches.forEach((q) => hole(q.x, q.y - 30, q.lit ? 125 + Math.sin(t * 8) * 4 : 26));
+      L.gems.forEach((g) => !g.got && hole(g.x, g.y, 16));
+      if (L.goal) hole(L.goal.x + 15, L.goal.y + 8, 45);
+      c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(dark, 0, 0);
+    }
+    c.setTransform(k, 0, 0, k, 0, 0);
+    c.fillStyle = "rgba(255,255,255,.88)"; rrect(c, 8, 8, 96, 28, 14); c.fill();
+    c.fillStyle = "#1C2944"; c.font = "800 15px Nunito, sans-serif"; c.textAlign = "left"; c.textBaseline = "middle";
+    c.fillText(`💎 ${L.got} / ${L.gems.length + L.qs}`, 18, 23);
+    if (B.on && Math.floor(t * 4) % 2) { c.fillStyle = "#E04C74"; c.font = "900 26px Grandstander, sans-serif"; c.textAlign = "center"; c.fillText("LAUF! ➜", gViewW / 2, 30); }
+  }
+
+  /* Ablauf */
+  let GL = null, gameRun = false, gameRaf = 0, gameLast = 0;
+  const gIn = { l: false, r: false, buf: 0 };
+  function sizeGame() {
+    const w = $("gameWrap").clientWidth || 360;
+    const h = Math.round(Math.max(200, Math.min(w * 0.75, innerHeight - 230)));
+    gDpr = Math.min(2, devicePixelRatio || 1);
+    gc.width = Math.round(w * gDpr); gc.height = Math.round(h * gDpr); gc.style.height = h + "px";
+    dark.width = gc.width; dark.height = gc.height;
+    gScale = h / WH; gViewW = w / gScale;
+  }
+  function frame(now) {
+    if (!gameRun) return;
+    const dt = Math.min(0.05, (now - gameLast) / 1000); gameLast = now;
+    const n = dt > 0.02 ? 2 : 1;
+    for (let s = 0; s < n && gameRun; s++) gUpdate(GL, dt / n);
+    gDraw(GL);
+    if (gameRun) gameRaf = requestAnimationFrame(frame);
+  }
+  function startLoop() { if (gameRun || !GL) return; gameRun = true; gameLast = performance.now(); gameRaf = requestAnimationFrame(frame); }
+  function stopLoop() { gameRun = false; cancelAnimationFrame(gameRaf); }
+  function stopGame() {
+    stopLoop(); gIn.l = gIn.r = false; gIn.buf = 0;
+    document.querySelectorAll(".pbtn.on").forEach((b) => b.classList.remove("on"));
+    if (GL && GL.boulder.on) { GL.boulder.on = false; roarStop(); }
+    $("gateBox").hidden = true; gateCur = null; ghHold = false;
+  }
+  function winLevel(L) {
+    stopGame();
+    const i = L.i, first = !S.game.done.includes(i), last = i === LEVELS.length - 1;
+    if (first) { S.game.done.push(i); addPride(`Expedition geschafft: ${L.def.name}`, true); }
+    S.stats.levels++;
+    const got = award("game", 3, 9); save();
+    ovNext = () => go("map");
+    celebrate(last ? "Du hast den goldenen Löwen gefunden!" : `${L.def.goal} Gefunden!`, got ? `+${got} ★` : "",
+      `${L.got} von ${L.gems.length + L.qs} Edelsteinen. ` + (last ? `${heroOf().name}, du bist ein echtes Löwenherz!` : `${heroOf().name}, du warst richtig mutig!`));
+  }
+  function renderMap() {
+    const done = S.game.done;
+    $("expMap").innerHTML = LEVELS.map((l, i) => {
+      const open = i === 0 || done.includes(i - 1), ok = done.includes(i);
+      return (i ? '<div class="path"></div>' : "") + `<button class="stop" data-lv="${i}"${open ? "" : " disabled"}><span class="ico">${open ? l.ico : "🔒"}</span><span><b>${i + 1}. ${l.name}</b><small>${l.sub}</small></span><span class="st">${ok ? "⭐" : open ? "▶️" : ""}</span></button>`;
+    }).join("");
+  }
+  enter.map = () => { renderHeroPick(); renderMap(); speak("Die Dschungel-Expedition! Wer spielt heute, Matteo oder Elara? Finde den goldenen Löwen!"); };
+  $("expMap").addEventListener("click", (e) => { const b = e.target.closest("[data-lv]"); if (!b || b.disabled) return; pop(); GL = loadLevel(+b.dataset.lv); go("game"); });
+  enter.game = () => {
+    if (!GL) return go("map");
+    sizeGame();
+    GL.cam = Math.max(0, Math.min(GL.W * TS - gViewW, GL.p.x - gViewW * 0.4));
+    gDraw(GL); speak(`${GL.def.name}. ${GL.def.intro}`); startLoop();
+  };
+  window.addEventListener("resize", () => { if (current === "game" && GL) { sizeGame(); gDraw(GL); } });
+  function bindPad(id, key) {
+    const b = $(id);
+    const on = (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} b.classList.add("on"); ctx(); if (key === "j") gIn.buf = 0.15; else gIn[key] = true; };
+    const off = () => { b.classList.remove("on"); if (key !== "j") gIn[key] = false; };
+    b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off);
+    b.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
+  bindPad("gL", "l"); bindPad("gR", "r"); bindPad("gJ", "j");
+  const KEYS = { ArrowLeft: "l", a: "l", ArrowRight: "r", d: "r", ArrowUp: "j", w: "j", " ": "j" };
+  document.addEventListener("keydown", (e) => { const k = KEYS[e.key]; if (current !== "game" || !k || !$("gateBox").hidden) return; e.preventDefault(); if (k === "j") { if (!e.repeat) gIn.buf = 0.15; } else gIn[k] = true; });
+  document.addEventListener("keyup", (e) => { const k = KEYS[e.key]; if (k && k !== "j") gIn[k] = false; });
+
+  if (location.hash === "#debug") window.__lh = () => GL;
+  /* Mut-Tore */
+  let gateCur = null, ghStart = 0, ghRaf = 0, ghHold = false, ghFull = false;
+  function openGate(g) {
+    stopLoop(); gIn.l = gIn.r = false;
+    document.querySelectorAll(".pbtn.on").forEach((b) => b.classList.remove("on"));
+    gateCur = g;
+    $("gIco").textContent = g.pr.ico; $("gText").textContent = g.pr.text;
+    $("gSaid").hidden = g.pr.t !== "say"; $("gHold").hidden = g.pr.t !== "hold";
+    resetGHold(); $("gateBox").hidden = false;
+    speak(g.pr.text);
+  }
+  function gateDone() {
+    const g = gateCur; if (!g) return;
+    gateCur = null; $("gateBox").hidden = true;
+    g.open = true; S.stats.gates++; award("gate", 1, 10); save();
+    chime(); burst(GL, g.x + 15, g.y + 30, "#FFC233", 10, "★");
+    speak(["Super! Der Weg ist frei!", "Wow, wie mutig!", "Toll gesagt! Weiter geht's!"][Math.floor(Math.random() * 3)]);
+    startLoop();
+  }
+  $("gSaid").addEventListener("click", gateDone);
+  $("gSpeak").addEventListener("click", () => { if (gateCur) speak(gateCur.pr.speak || gateCur.pr.text); });
+  function resetGHold() { ghHold = false; ghFull = false; $("gFill").style.height = "0%"; $("gHoldLbl").textContent = "Mut-Knopf gedrückt halten!"; $("gHold").classList.remove("shake", "held"); }
+  function ghTick() {
+    const q = Math.min(1, (performance.now() - ghStart) / 1200);
+    $("gFill").style.height = Math.round(q * 100) + "%";
+    if (q >= 1 && !ghFull) { ghFull = true; $("gHoldLbl").textContent = "Jetzt loslassen!"; $("gHold").classList.add("shake"); try { navigator.vibrate && navigator.vibrate(60); } catch (x) {} }
+    if (ghHold) ghRaf = requestAnimationFrame(ghTick);
+  }
+  $("gHold").addEventListener("pointerdown", (e) => {
+    e.preventDefault(); try { $("gHold").setPointerCapture(e.pointerId); } catch (x) {} try { speechSynthesis.cancel(); } catch (x) {}
+    ghHold = true; ghFull = false; ghStart = performance.now(); $("gHold").classList.add("held"); $("gHoldLbl").textContent = "Lauter! Du schaffst das!";
+    roarStart(); ghTick();
+  });
+  const ghRel = () => { if (!ghHold) return; ghHold = false; cancelAnimationFrame(ghRaf); roarStop(); if (ghFull) gateDone(); else resetGHold(); };
+  $("gHold").addEventListener("pointerup", ghRel);
+  $("gHold").addEventListener("pointercancel", ghRel);
+  $("gHold").addEventListener("contextmenu", (e) => e.preventDefault());
+
+  /* ---------- Eltern ---------- */
+  let gateAns = 0;
+  enter.gate = () => {
+    const a = 3 + Math.floor(Math.random() * 7), b = 4 + Math.floor(Math.random() * 6);
+    gateAns = a * b; $("gateQ").textContent = `${a} × ${b} = ?`; $("gateInput").value = ""; $("gateMsg").hidden = true;
+  };
+  function tryGate() { if (+$("gateInput").value === gateAns) go("parent"); else { $("gateMsg").hidden = false; $("gateInput").select(); } }
+  $("gateOk").addEventListener("click", tryGate);
+  $("gateInput").addEventListener("keydown", (e) => { if (e.key === "Enter") tryGate(); });
+  enter.parent = () => {
+    $("nameInput").value = S.name;
+    $("resetYes").hidden = true;
+    $("stats").innerHTML = [["★", S.stars, "Sterne"], ["🗺️", S.stats.missions, "Missionen"], ["🦁", S.stats.roars, "Brüller"], ["🎲", S.stats.talks, "Gespräche"], ["⚡", S.stats.power, "Kraft-Übungen"], ["🫙", S.pride.length, "Stolz-Murmeln"], ["🧭", S.game.done.length, "Expeditions-Level"], ["🗣️", S.stats.words, "Wörter geübt"], ["👂", S.stats.ears, "Ohren-Runden"], ["👅", S.stats.tongue, "Zungen-Turnen"]]
+      .map(([i, n, l]) => `<div><b>${n}</b><span>${i} ${l}</span></div>`).join("");
+    const days = [];
+    for (let k = 6; k >= 0; k--) { const d = new Date(); d.setDate(d.getDate() - k); days.push(d); }
+    $("week").innerHTML = days.map((d) => {
+      const iso = d.toISOString().slice(0, 10);
+      const fs = S.feelings.filter((f) => f.d === iso);
+      const last = fs.length ? FEELINGS.find((x) => x.k === fs[fs.length - 1].k) : null;
+      return `<div><i>${last ? last.i : "·"}</i>${d.toLocaleDateString("de-CH", { weekday: "short" })}</div>`;
+    }).join("");
+  };
+  $("nameSave").addEventListener("click", () => { S.name = $("nameInput").value.trim().slice(0, 24); save(); renderTop(); toast(S.name ? `Gespeichert. Hallo ${S.name}!` : "Gespeichert."); });
+  $("resetAsk").addEventListener("click", () => { $("resetYes").hidden = false; });
+  $("resetYes").addEventListener("click", () => { const keepName = S.name; S = fresh(); S.name = keepName; save(); renderTop(); toast("Alles zurückgesetzt. Auf ein neues Abenteuer!"); go("home"); });
+
+  /* ---------- Offline-App ---------- */
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+  let installEv = null;
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEv = e; $("installBtn").hidden = false; });
+  $("installBtn").addEventListener("click", async () => { if (!installEv) return; installEv.prompt(); try { await installEv.userChoice; } catch (e) {} installEv = null; $("installBtn").hidden = true; });
+  if ("serviceWorker" in navigator && location.protocol !== "file:" && !window.Capacitor) {
+    navigator.serviceWorker.register("sw.js").then(() => navigator.serviceWorker.ready).then(() => {
+      $("offlineState").textContent = "✅ Offline bereit: Die App läuft jetzt auch ohne Internet.";
+    }).catch(() => {});
+  }
+  if (matchMedia("(display-mode: standalone)").matches || navigator.standalone) $("offlineState").textContent = "✅ Installiert und offline bereit.";
+
+  /* ---------- Start ---------- */
+  renderTop();
+  go("home");
+})();
+</script>
+
+</body>
+</html>

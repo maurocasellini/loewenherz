@@ -1,0 +1,41 @@
+# Baut bei jedem Push eine installierbare Android-App (APK) – für Kinder-Tablets ohne Play Store.
+# Download: GitHub → Actions → letzter Lauf → Artifacts → "loewenherz-apk".
+name: Android-App bauen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Abhängigkeiten
+        run: npm install
+      - name: Android-Projekt erzeugen
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: App-Icon setzen
+        run: |
+          for d in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            cp www/icon-192.png android/app/src/main/res/$d/ic_launcher.png
+            cp www/icon-192.png android/app/src/main/res/$d/ic_launcher_round.png
+            cp www/icon-192.png android/app/src/main/res/$d/ic_launcher_foreground.png
+          done
+      - name: APK bauen
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loewenherz-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
