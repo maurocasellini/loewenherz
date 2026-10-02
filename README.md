@@ -24,6 +24,13 @@ Bei jedem Push auf `main` baut GitHub automatisch eine APK.
 GitHub → **Actions** → letzter Lauf «Android-App bauen» → **Artifacts** → `loewenherz-apk` herunterladen, entpacken, `app-debug.apk` aufs Tablet kopieren und öffnen.
 (Einmalig erlauben: «Apps aus unbekannten Quellen installieren».)
 
+## KI-Stimme
+
+Alles, was die App sagt, wird **einmal vorab von einer KI-Stimme gesprochen** und als MP3 in `www/voice/` gelegt. Deshalb funktioniert die Stimme auch im Flugmodus. Das erledigt der Workflow «KI-Stimme erzeugen» automatisch, sobald sich ein Text in der App ändert. Was nicht vorab gesprochen werden kann (z.B. selbst getippte Stolz-Sätze), liest die Gerätestimme.
+
+- **Standard (gratis):** Piper-Stimme «Thorsten» (frei, CC0)
+- **Natürlicher:** OpenAI-Stimme. Dafür unter GitHub → Settings → Secrets and variables → Actions ein Secret `OPENAI_API_KEY` anlegen. Optional als Variable `OPENAI_TTS_VOICE` eine andere Stimme setzen (z.B. `coral`, `nova`, `shimmer`, `sage`). Danach den Workflow einmal von Hand starten (Actions → «KI-Stimme erzeugen» → Run workflow). Alle Sätze kosten zusammen nur Rappen.
+
 ## Kindermodus
 
 | Gerät | So geht's |

@@ -1,0 +1,63 @@
+# Erzeugt die KI-Stimme: jeder Satz der App wird einmal vorab gesprochen und als MP3 in www/voice/ gelegt.
+# Mit Secret OPENAI_API_KEY -> OpenAI-Stimme (Variable OPENAI_TTS_VOICE, Standard "coral").
+# Ohne Secret -> freie Piper-Stimme (Variable PIPER_VOICE, Standard Thorsten "high").
+name: KI-Stimme erzeugen
+
+on:
+  push:
+    branches: [main]
+    paths: ["www/index.html", "tools/**", ".github/workflows/voice.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: voice
+  cancel-in-progress: false
+
+jobs:
+  voice:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_TTS_VOICE: ${{ vars.OPENAI_TTS_VOICE || 'coral' }}
+      PIPER_VOICE: ${{ vars.PIPER_VOICE || 'de/de_DE/thorsten/high/de_DE-thorsten-high' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Werkzeuge
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+          npm install --no-save playwright@1.48.2
+          npx playwright install --with-deps chromium
+      - name: Sätze aus der App lesen
+        run: node tools/phrases.mjs phrases.json
+      - name: Piper-Stimme laden (nur ohne OpenAI-Schlüssel)
+        if: env.OPENAI_API_KEY == ''
+        run: |
+          pip install -q piper-tts
+          mkdir -p .piper
+          curl -sSfL -o .piper/voice.onnx "https://huggingface.co/rhasspy/piper-voices/resolve/main/${PIPER_VOICE}.onnx"
+          curl -sSfL -o .piper/voice.onnx.json "https://huggingface.co/rhasspy/piper-voices/resolve/main/${PIPER_VOICE}.onnx.json"
+          echo "PIPER_MODEL=$PWD/.piper/voice.onnx" >> "$GITHUB_ENV"
+          echo "PIPER_NAME=$(basename "$PIPER_VOICE")" >> "$GITHUB_ENV"
+      - name: Stimme erzeugen
+        run: python tools/gen-voice.py phrases.json
+      - name: Offline-Speicher auffrischen
+        run: |
+          v=$(sha1sum www/voice/index.json | cut -c1-8)
+          sed -i "s/const VERSION = \"loewenherz-[^\"]*\";/const VERSION = \"loewenherz-$v\";/" www/sw.js
+      - name: Speichern
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add www/voice www/sw.js
+          if git diff --cached --quiet; then echo "Nichts Neues."; exit 0; fi
+          git commit -m "KI-Stimme aktualisiert"
+          git push

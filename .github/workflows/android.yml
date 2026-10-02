@@ -5,6 +5,10 @@ name: Android-App bauen
 on:
   push:
     branches: [main]
+  # Nach neuer KI-Stimme nochmal bauen (Pushes des Stimmen-Bots lösen sonst nichts aus)
+  workflow_run:
+    workflows: ["KI-Stimme erzeugen"]
+    types: [completed]
   workflow_dispatch:
 
 jobs:

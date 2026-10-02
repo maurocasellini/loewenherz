@@ -780,21 +780,55 @@ mark { background: none; color: var(--berry); }
   try { findVoice(); speechSynthesis.onvoiceschanged = findVoice; } catch (e) {}
   // In der Android-App (Capacitor) gibt es keine Browser-Stimme: dann die native Sprachausgabe nutzen.
   const nativeTTS = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech;
+  /* KI-Stimme: vorab erzeugte Audiodateien (voice/<hash>.mp3), offline verfügbar.
+     Fehlt ein Satz (z.B. selbst getippter Text), spricht die Gerätestimme. */
+  const cleanSay = (t) => String(t).replace(/[«»✔★➜]/g, "").replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, "").replace(/\s+/g, " ").trim();
+  const splitSay = (t) => (cleanSay(t).match(/[^.!?:…]+[.!?:…]*/g) || []).map((x) => x.trim()).filter((x) => /[a-zäöüß0-9]/i.test(x));
+  const sayKey = (t) => t.toLowerCase().replace(/[^a-zäöüß0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  const sayHash = (t) => { let h = 0x811c9dc5; for (const ch of sayKey(t)) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, "0"); };
+  let VOICE = null, sayRun = 0;
+  const player = new Audio(); player.preload = "auto";
+  fetch("voice/index.json").then((r) => r.ok ? r.json() : null).then((j) => { if (j && j.files) VOICE = new Set(j.files); }).catch(() => {});
+  function stopSpeak() { sayRun++; try { player.pause(); } catch (e) {} try { speechSynthesis.cancel(); } catch (e) {} if (nativeTTS) nativeTTS.stop().catch(() => {}); }
+  const playClip = (h, run) => new Promise((res) => {
+    if (run !== sayRun) return res();
+    player.onended = player.onerror = () => res();
+    player.src = "voice/" + h + ".mp3"; player.playbackRate = 1;
+    player.play().catch(() => res());
+  });
   function speak(text) {
     if (!S.sound || !text) return;
-    if (nativeTTS) {
-      const t = text.replace(/[«»]/g, "");
-      nativeTTS.stop().catch(() => {}).then(() => nativeTTS.speak({ text: t, lang: "de-DE", rate: 0.95, pitch: 1.15, volume: 1, category: "ambient" })).catch(() => {});
+    const segs = splitSay(text);
+    if (VOICE && segs.some((x) => VOICE.has(sayHash(x)))) {
+      stopSpeak(); const run = sayRun;
+      (async () => {
+        for (const x of segs) {
+          if (run !== sayRun) return;
+          const h = sayHash(x);
+          if (VOICE.has(h)) await playClip(h, run);
+          else if (!/[0-9]/.test(x)) await deviceSay(x, run);
+        }
+      })();
       return;
     }
-    try {
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text.replace(/[«»]/g, ""));
-      u.lang = voice ? voice.lang : "de-DE";
-      if (voice) u.voice = voice;
-      u.rate = 0.92; u.pitch = 1.15;
-      speechSynthesis.speak(u);
-    } catch (e) {}
+    deviceSay(text);
+  }
+  function deviceSay(text, run) {
+    if (run == null) stopSpeak();
+    return new Promise((res) => {
+      if (nativeTTS) {
+        nativeTTS.speak({ text: cleanSay(text), lang: "de-DE", rate: 0.95, pitch: 1.15, volume: 1, category: "ambient" }).then(res, res);
+        return;
+      }
+      try {
+        const u = new SpeechSynthesisUtterance(cleanSay(text));
+        u.lang = voice ? voice.lang : "de-DE";
+        if (voice) u.voice = voice;
+        u.rate = 0.92; u.pitch = 1.15;
+        u.onend = u.onerror = () => res();
+        speechSynthesis.speak(u);
+      } catch (e) { res(); }
+    });
   }
 
   /* ---------- Klänge ---------- */
@@ -937,7 +971,7 @@ mark { background: none; color: var(--berry); }
   const enter = {};
   function go(name) {
     stopTimers(); stopMirror(); stopRec(); stopGame();
-    try { speechSynthesis.cancel(); } catch (e) {}
+    stopSpeak();
     document.querySelectorAll("[data-screen]").forEach((s) => (s.hidden = s.dataset.screen !== name));
     $("homeBtn").hidden = name === "home";
     current = name;
@@ -946,7 +980,7 @@ mark { background: none; color: var(--berry); }
   }
   document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => { pop(); go(b.dataset.go); }));
   $("homeBtn").addEventListener("click", () => go("home"));
-  $("soundBtn").addEventListener("click", () => { S.sound = !S.sound; save(); renderTop(); if (S.sound) speak("Ich lese dir vor!"); else try { speechSynthesis.cancel(); } catch (e) {} });
+  $("soundBtn").addEventListener("click", () => { S.sound = !S.sound; save(); renderTop(); if (S.sound) speak("Ich lese dir vor!"); else stopSpeak(); });
   $("parentBtn").addEventListener("click", () => go("gate"));
   document.querySelectorAll("[data-speak]").forEach((b) => b.addEventListener("click", () => speak($(b.dataset.speak).textContent)));
 
@@ -985,7 +1019,7 @@ mark { background: none; color: var(--berry); }
   }
   const rb = $("roarBtn");
   rb.addEventListener("pointerdown", (e) => {
-    e.preventDefault(); try { speechSynthesis.cancel(); } catch (x) {}
+    e.preventDefault(); stopSpeak();
     try { rb.setPointerCapture(e.pointerId); } catch (x) {}
     holding = true; full = false; holdStart = performance.now(); rb.classList.add("held"); $("roarLbl").textContent = "Lauter! LAUTER!";
     roarStart(); holdTick();
@@ -1092,7 +1126,7 @@ mark { background: none; color: var(--berry); }
     $("jarCount").textContent = S.pride.length ? `${S.pride.length} ${S.pride.length === 1 ? "Murmel" : "Murmeln"}. Tipp auf eine, dann hörst du, was du geschafft hast.` : "Noch leer. Die erste Murmel wartet auf dich!";
     $("prideList").innerHTML = S.pride.slice().reverse().slice(0, 12).map((p) => `<li><span class="dot" style="background:${MARBLE[p.c]}"></span><div>${esc(p.t)}<small>${new Date(p.d + "T12:00").toLocaleDateString("de-CH", { weekday: "long", day: "numeric", month: "long" })}</small></div></li>`).join("");
   }
-  enter.jar = () => { renderJar(false); speak(S.pride.length ? `In deinem Stolz-Glas sind schon ${S.pride.length} Murmeln!` : "Dein Stolz-Glas ist noch leer. Lass es uns füllen!"); };
+  enter.jar = () => { renderJar(false); speak(S.pride.length ? "Schau mal, wie viele Murmeln schon in deinem Stolz-Glas sind! Tipp auf eine Murmel." : "Dein Stolz-Glas ist noch leer. Lass es uns füllen!"); };
   $("glass").addEventListener("click", (e) => { const b = e.target.closest("[data-p]"); if (!b) return; const p = S.pride[+b.dataset.p]; pop(); toast(p.t); speak(p.t); });
   function submitPride() {
     const v = $("prideInput").value.trim(); if (!v) { $("prideInput").focus(); return; }
@@ -1211,7 +1245,7 @@ mark { background: none; color: var(--berry); }
   function stopRec() { clearTimeout(recT); if (rec && rec.state === "recording") rec.stop(); }
   $("dRec").addEventListener("click", async () => {
     if (rec && rec.state === "recording") return stopRec();
-    try { speechSynthesis.cancel(); } catch (e) {}
+    stopSpeak();
     try {
       recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const chunks = [];
@@ -1846,6 +1880,31 @@ mark { background: none; color: var(--berry); }
   document.addEventListener("keyup", (e) => { const k = KEYS[e.key]; if (k && k !== "j") gIn[k] = false; });
 
   if (location.hash === "#debug") window.__lh = () => GL;
+  /* Alle Sätze, die die App sprechen kann – liest tools/gen-voice.mjs aus, um die KI-Stimme zu erzeugen. */
+  function collectPhrases() {
+    const out = new Set(), add = (...ts) => ts.forEach((t) => t && splitSay(t).forEach((x) => out.add(x)));
+    const src = Array.from(document.scripts).map((x) => x.textContent).join("\n");
+    (src.match(/"(?:[^"\\\n]|\\.)*"|`[^`$]*`/g) || []).map((x) => x.slice(1, -1)).filter((x) => / /.test(x) && /^[A-ZÄÖÜa-zäöüß]/.test(x) && !/[<>{}=;_#@\/]|\(|\)|\d+ \d+|Emoji|Segoe|sans-serif/.test(x)).forEach((x) => add(x));
+    const names = ["Matteo", "Elara", "Löwenkind"];
+    names.forEach((n) => add(`Hallo ${n}! Was machen wir heute?`, `${n} ist bereit für das Abenteuer!`, `${n}, du bist ein echtes Löwenherz!`, `${n}, du warst richtig mutig!`, `Gespeichert. Hallo ${n}!`));
+    MISSIONS.forEach((m) => add("Deine Mission: " + m.t, m.t));
+    AFFIRM.forEach((a) => add("Sag mir nach, ganz laut: " + a, `«${a}» Das stimmt!`));
+    FEELINGS.forEach((f) => add(f.t));
+    ASK_ME.concat(ASK_YOU).forEach((q) => add(q));
+    STAGES.forEach((st) => add(`Du bist jetzt: ${st.n}!`));
+    SND.forEach((x) => {
+      add(x.title, x.tip, `Du bist ein ${x.id}-Profi!`, ...x.laut, ...x.syl);
+      [x.start, x.mid, x.end, x.sent].forEach((arr) => arr.forEach(([w]) => add(w)));
+    });
+    STEPN.forEach((n) => add(n, `Weiter zu: ${n}`));
+    AGAIN.concat(PRAISE).forEach((t) => add(t));
+    Object.values(PAIRS).forEach((ps) => ps.forEach((pr) => pr.forEach(([w, a]) => add(`Wo ist ${a} ${w}?`, `${a} ${w}!`))));
+    EX.forEach(([, t]) => add(t));
+    LEVELS.forEach((l) => { add(l.name, l.intro); l.gates.forEach((g) => add(g.text, g.speak)); });
+    add($("poseText").textContent);
+    return Array.from(out).map((t) => ({ t, h: sayHash(t) }));
+  }
+  if (location.hash === "#phrases") window.__phrases = collectPhrases;
   /* Mut-Tore */
   let gateCur = null, ghStart = 0, ghRaf = 0, ghHold = false, ghFull = false;
   function openGate(g) {
@@ -1875,7 +1934,7 @@ mark { background: none; color: var(--berry); }
     if (ghHold) ghRaf = requestAnimationFrame(ghTick);
   }
   $("gHold").addEventListener("pointerdown", (e) => {
-    e.preventDefault(); try { $("gHold").setPointerCapture(e.pointerId); } catch (x) {} try { speechSynthesis.cancel(); } catch (x) {}
+    e.preventDefault(); try { $("gHold").setPointerCapture(e.pointerId); } catch (x) {} stopSpeak();
     ghHold = true; ghFull = false; ghStart = performance.now(); $("gHold").classList.add("held"); $("gHoldLbl").textContent = "Lauter! Du schaffst das!";
     roarStart(); ghTick();
   });
