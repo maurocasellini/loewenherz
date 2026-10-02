@@ -20,13 +20,26 @@ STYLE = os.environ.get("TTS_STYLE", (
     "wie eine liebevolle Erzählerin für ein sechsjähriges Kind. Eher langsam und sehr deutlich. "
     "Einzelne Silben oder Laute klar und kurz aussprechen."))
 PIPER_MODEL = os.environ.get("PIPER_MODEL", "")
+PRON_VERSION = "p3"  # hochzählen, wenn sich die Aussprache-Regeln ändern
 
-engine = f"openai:{OPENAI_MODEL}:{OPENAI_VOICE}" if KEY else "piper:" + os.environ.get("PIPER_NAME", os.path.basename(PIPER_MODEL))
+engine = (f"openai:{OPENAI_MODEL}:{OPENAI_VOICE}" if KEY else "piper:" + os.environ.get("PIPER_NAME", os.path.basename(PIPER_MODEL))) + ":" + PRON_VERSION
 if not KEY and not PIPER_MODEL:
     sys.exit("Weder OPENAI_API_KEY noch PIPER_MODEL gesetzt.")
 
 
+# Aussprache-Regeln. Wörter ohne Vokal (SCH, Sss, Psst) buchstabiert Piper sonst ("Es-Ze-Ha").
+# Piper bekommt die Laute als Lautschrift [[ ... ]], OpenAI eine natürliche Schreibweise.
+PRON = [  # (Muster, Piper, OpenAI)
+    (r"\b[Ss][Cc][Hh]+\b", "[[ ʃʃʃʃ ]]", "Schhhh"),
+    (r"(?<!['’])\b[Ss]+\b", "[[ ssss ]]", "Ssss"),
+    (r"\bPs+t\b", "[[ pst ]]", "Psst"),
+    (r"\bHmm+\b", "[[ hmː ]]", "Hmm"),
+]
+
+
 def speakable(t):
+    for pat, piper_ph, natural in PRON:
+        t = re.sub(pat, natural if KEY else piper_ph, t)
     # GROSSBUCHSTABEN-Wörter normal schreiben, sonst buchstabieren manche Stimmen sie.
     t = re.sub(r"\b([A-ZÄÖÜ])([A-ZÄÖÜß]+)\b", lambda m: m.group(1) + m.group(2).lower(), t)
     return t
@@ -65,15 +78,21 @@ def tts_piper(text, mp3):
         wav = f.name
     with wave.open(wav, "wb") as wf:
         _piper.synthesize_wav(text, wf, syn_config=SynthesisConfig(length_scale=1.12))
-    to_mp3(wav, mp3)
+    to_mp3(wav, mp3, stretch=is_pure_sound(text))
     os.unlink(wav)
 
 
-def to_mp3(src, mp3):
+def is_pure_sound(t):
+    """Nur Laute ohne echte Wörter, z.B. "Schhhh!" -> wird zum Nachmachen länger gezogen."""
+    return "[[" in t and not re.search(r"[A-Za-zÄÖÜäöüß]", re.sub(r"\[\[.*?\]\]", "", t))
+
+
+def to_mp3(src, mp3, stretch=False):
     # Mono, leise Stellen am Anfang/Ende weg, Lautstärke angleichen, klein halten.
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af",
                     "silenceremove=start_periods=1:start_threshold=-50dB,areverse,"
-                    "silenceremove=start_periods=1:start_threshold=-50dB,areverse,loudnorm=I=-16:TP=-1.5",
+                    "silenceremove=start_periods=1:start_threshold=-50dB,areverse,"
+                    + ("atempo=0.5,atempo=0.6," if stretch else "") + "loudnorm=I=-16:TP=-1.5",
                     "-ac", "1", "-ar", "24000", "-b:a", "48k", mp3], check=True)
 
 
