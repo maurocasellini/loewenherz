@@ -2207,11 +2207,12 @@ mark { background: none; color: var(--berry); }
     }
     if (th.dark) {
       const d = dctx; d.setTransform(1, 0, 0, 1, 0, 0); d.globalCompositeOperation = "source-over";
-      d.fillStyle = "rgba(4,6,16,0.93)"; d.fillRect(0, 0, dark.width, dark.height);
+      const litN = L.torches.filter((q) => q.lit).length, dim = Math.max(0.42, 0.62 - litN * 0.04); // Dämmerung, wird mit jeder Fackel heller
+      d.fillStyle = `rgba(10,12,30,${dim})`; d.fillRect(0, 0, dark.width, dark.height);
       d.globalCompositeOperation = "destination-out";
       const hole = (wx, wy, r) => { const sx = (wx - L.cam) * k, sy = (wy + gOffY) * k, rr = r * k; const g2 = d.createRadialGradient(sx, sy, rr * .3, sx, sy, rr); g2.addColorStop(0, "rgba(0,0,0,1)"); g2.addColorStop(1, "rgba(0,0,0,0)"); d.fillStyle = g2; d.beginPath(); d.arc(sx, sy, rr, 0, 7); d.fill(); };
-      hole(p.x + p.w / 2, p.y + p.h / 2, 95);
-      L.torches.forEach((q) => hole(q.x, q.y - 30, q.lit ? 125 + Math.sin(t * 8) * 4 : 26));
+      hole(p.x + p.w / 2, p.y + p.h / 2, 170);
+      L.torches.forEach((q) => hole(q.x, q.y - 30, q.lit ? 190 + Math.sin(t * 8) * 5 : 55));
       L.gems.forEach((g) => !g.got && hole(g.x, g.y, 16));
       if (th.lava) { const x0 = Math.max(0, Math.floor(L.cam / TS)), x1 = Math.min(L.W - 1, Math.ceil((L.cam + gViewW) / TS)); for (let tx = x0; tx <= x1; tx++) if (L.g[8][tx] === "~") hole(tx * TS + 15, 8 * TS + 10, 45); }
       L.hooks.forEach((h) => hole(h.x, h.y, 22));
