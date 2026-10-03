@@ -317,32 +317,24 @@ mark { background: none; color: var(--berry); }
 .gb { flex: none; position: relative; background: #CFCCC4; border-top: 5px solid #B8B5AC; padding: 30px 22px calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: space-between; align-items: center; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
 .gb-brand { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-family: var(--f-display); font-weight: 900; font-style: italic; font-size: 13px; letter-spacing: .12em; color: #2E2F7A; }
 .gb-brand span { color: #9E2A50; font-size: 11px; letter-spacing: .06em; }
-.dpad { position: relative; width: 150px; height: 150px; flex: none; touch-action: none; }
-.dpad .bar { position: absolute; background: #2A2A30; border-radius: 8px; box-shadow: 0 5px 0 #141418, inset 0 2px 0 rgba(255,255,255,.12); }
-.dpad .bar.h { left: 0; right: 0; top: 50px; height: 50px; }
-.dpad .bar.v { top: 0; bottom: 0; left: 50px; width: 50px; }
-.dpad .dimple { position: absolute; left: 62px; top: 62px; width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #1C1C21, #34343B); }
-.dpad .ar { position: absolute; width: 0; height: 0; border: 9px solid transparent; opacity: .55; }
-.dpad .ar.u { left: 66px; top: 8px; border-bottom: 12px solid #8A8A96; border-top: 0; }
-.dpad .ar.d { left: 66px; bottom: 8px; border-top: 12px solid #8A8A96; border-bottom: 0; }
-.dpad .ar.l { top: 66px; left: 8px; border-right: 12px solid #8A8A96; border-left: 0; }
-.dpad .ar.r { top: 66px; right: 8px; border-left: 12px solid #8A8A96; border-right: 0; }
-.dpad.on-l .ar.l, .dpad.on-r .ar.r, .dpad.on-u .ar.u { opacity: 1; border-left-color: transparent; }
-.dpad.on-l .ar.l { border-right-color: #F5D04C; } .dpad.on-r .ar.r { border-left-color: #F5D04C; } .dpad.on-u .ar.u { border-bottom-color: #F5D04C; border-left-color: transparent; }
-.dpad.on-l { transform: rotate(-3deg); } .dpad.on-r { transform: rotate(3deg); } .dpad.on-u { transform: translateY(2px); }
-.ab { display: flex; gap: 18px; transform: rotate(-22deg); margin-right: 4px; }
-.abk { display: grid; justify-items: center; gap: 6px; }
-.abk.a { margin-top: -34px; }
-.abk small { font-family: var(--f-display); font-weight: 900; font-size: 13px; letter-spacing: .04em; color: #2E2F7A; white-space: nowrap; }
-.pbtn.gbb { width: 82px; height: 82px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #C2416E, #8E2147); box-shadow: 0 6px 0 #5E1430, inset 0 2px 0 rgba(255,255,255,.25); font-size: 0; }
+.mv { display: flex; gap: 14px; }
+.pbtn.gbm { width: min(84px, 19.5vw); height: min(84px, 19.5vw); border-radius: 22px; background: #2A2A30; box-shadow: 0 6px 0 #141418, inset 0 2px 0 rgba(255,255,255,.12); }
+.pbtn.gbm svg { width: 50%; height: 50%; fill: #E9E9EF; }
+.pbtn.gbm.on { transform: translateY(4px); box-shadow: 0 2px 0 #141418; }
+.pbtn.gbm.on svg { fill: #F5D04C; }
+.ab { display: flex; gap: 16px; align-items: flex-end; }
+.pbtn.gbb { width: min(84px, 19.5vw); height: min(84px, 19.5vw); border-radius: 50%; box-shadow: 0 6px 0 #5E1430, inset 0 2px 0 rgba(255,255,255,.25); background: radial-gradient(circle at 40% 35%, #C2416E, #8E2147); }
+.pbtn.gbb.spr { margin-bottom: 30px; background: radial-gradient(circle at 40% 35%, #4CC783, #1F7F49); box-shadow: 0 6px 0 #145530, inset 0 2px 0 rgba(255,255,255,.25); }
+.pbtn.gbb svg { width: 57%; height: 57%; }
 .pbtn.gbb.on { transform: translateY(4px); box-shadow: 0 2px 0 #5E1430; }
-@media (max-width: 370px) { .dpad { transform: scale(.85); margin-left: -10px; } .pbtn.gbb { width: 70px; height: 70px; } }
+.pbtn.gbb.spr.on { box-shadow: 0 2px 0 #145530; }
+@media (max-width: 400px) { .mv, .ab { gap: 10px; } .gb { padding-left: 14px; padding-right: 14px; } }
 @media (orientation: landscape) and (max-height: 500px) {
   .screen[data-screen="game"] { flex-direction: row; }
   .gb { order: -1; width: 0; padding: 0; border: 0; }
   .gb-brand { display: none; }
-  .dpad, .ab { position: fixed; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 6; opacity: .85; }
-  .dpad { left: calc(14px + env(safe-area-inset-left, 0px)); }
+  .mv, .ab { position: fixed; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 6; opacity: .85; }
+  .mv { left: calc(14px + env(safe-area-inset-left, 0px)); }
   .ab { right: calc(18px + env(safe-area-inset-right, 0px)); }
 }
 .pad { display: flex; justify-content: space-between; align-items: center; gap: 12px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -499,13 +491,13 @@ mark { background: none; color: var(--berry); }
     <div class="gamewrap" id="gameWrap"><canvas id="game" aria-label="Spielfeld"></canvas></div>
     <div class="gb">
       <div class="gb-brand" aria-hidden="true">LÖWENHERZ <span>Expedition</span></div>
-      <div class="dpad" id="dpad" role="group" aria-label="Steuerkreuz: links, rechts, oben springt">
-        <span class="bar h"></span><span class="bar v"></span><span class="dimple"></span>
-        <i class="ar u"></i><i class="ar d"></i><i class="ar l"></i><i class="ar r"></i>
+      <div class="mv" role="group" aria-label="Laufen">
+        <button class="pbtn gbm" id="gL" aria-label="Zurück"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M27 7 L10 20 L27 33 Z"/></svg></button>
+        <button class="pbtn gbm" id="gR" aria-label="Vor"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M13 7 L30 20 L13 33 Z"/></svg></button>
       </div>
-      <div class="ab">
-        <div class="abk b"><button class="pbtn gbb" id="gB" aria-label="Peitsche (B)"></button><small>B · Peitsche</small></div>
-        <div class="abk a"><button class="pbtn gbb" id="gJ" aria-label="Springen (A)"></button><small>A · Sprung</small></div>
+      <div class="ab" role="group" aria-label="Aktionen">
+        <button class="pbtn gbb whip" id="gB" aria-label="Peitsche"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="30" width="17" height="7" rx="3.5" transform="rotate(-35 13 33)" fill="#fff"/><path d="M19 27 C30 10 46 17 35 27 S21 34 40 37" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/><path d="M42 31 l3-3 M44 37 h4 M41 42 l2 3" stroke="#FFD86B" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+        <button class="pbtn gbb spr" id="gJ" aria-label="Springen"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 L37 20 H29 V33 H19 V20 H11 Z" fill="#fff"/><path d="M11 42 H37" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg></button>
       </div>
     </div>
   </section>
@@ -2305,20 +2297,8 @@ mark { background: none; color: var(--berry); }
   bindPad("gJ", "j");
   { const b = $("gB"); b.addEventListener("pointerdown", (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (x) {} b.classList.add("on"); ctx(); gIn.whip = true; });
     ["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => b.addEventListener(ev, () => b.classList.remove("on"))); b.addEventListener("contextmenu", (e) => e.preventDefault()); }
-  // Steuerkreuz: eine Fläche, Richtung aus der Fingerposition (Daumen kann rutschen)
-  const dp = $("dpad"); let dpId = null;
-  function padReset() { gIn.l = gIn.r = false; dpId = null; dp.classList.remove("on-l", "on-r", "on-u"); document.querySelectorAll(".pbtn.on").forEach((b) => b.classList.remove("on")); }
-  function dpSet(e) {
-    const r = dp.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
-    const side = Math.abs(dx) > 10 && Math.abs(dx) >= Math.abs(dy) * 0.6, up = dy < -22 && Math.abs(dy) > Math.abs(dx);
-    gIn.l = side && dx < 0; gIn.r = side && dx > 0;
-    if (up && !dp.classList.contains("on-u")) gIn.buf = 0.15;
-    dp.classList.toggle("on-l", gIn.l); dp.classList.toggle("on-r", gIn.r); dp.classList.toggle("on-u", up);
-  }
-  dp.addEventListener("pointerdown", (e) => { e.preventDefault(); try { dp.setPointerCapture(e.pointerId); } catch (x) {} dpId = e.pointerId; ctx(); dpSet(e); });
-  dp.addEventListener("pointermove", (e) => { if (e.pointerId === dpId) dpSet(e); });
-  ["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => dp.addEventListener(ev, (e) => { if (e.pointerId === dpId) padReset(); }));
-  dp.addEventListener("contextmenu", (e) => e.preventDefault());
+  bindPad("gL", "l"); bindPad("gR", "r");
+  function padReset() { gIn.l = gIn.r = false; document.querySelectorAll(".pbtn.on").forEach((b) => b.classList.remove("on")); }
   const KEYS = { ArrowLeft: "l", a: "l", ArrowRight: "r", d: "r", ArrowUp: "j", w: "j", " ": "j", x: "b", b: "b", Shift: "b" };
   document.addEventListener("keydown", (e) => { const k = KEYS[e.key]; if (current !== "game" || !k || !$("gateBox").hidden) return; e.preventDefault(); if (k === "j") { if (!e.repeat) gIn.buf = 0.15; } else if (k === "b") { if (!e.repeat) gIn.whip = true; } else gIn[k] = true; });
   document.addEventListener("keyup", (e) => { const k = KEYS[e.key]; if (k && k !== "j") gIn[k] = false; });
